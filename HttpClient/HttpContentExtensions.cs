@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace JannikB.Glue.AspNetCore
 {
@@ -14,7 +15,8 @@ namespace JannikB.Glue.AspNetCore
 
         public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string url, T data)
         {
-            var dataAsString = JsonSerializer.Serialize(data);
+
+            var dataAsString = JObject.FromObject(data).ToString();// JsonSerializer.Serialize<T>(data);
             var content = new StringContent(dataAsString);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
