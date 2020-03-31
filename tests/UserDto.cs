@@ -1,9 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace JannikB.Glue.AspNetCore.Tests
 {
 
-    public class UserDto: IUser
+    public class UserDto : IUser
     {
         [RequiredIfNullOrEmpty("DisplayName", "Email")]
         public string Id { get; set; }

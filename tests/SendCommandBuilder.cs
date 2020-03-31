@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace JannikB.Glue.AspNetCore.Tests
 {
+
     public static class HttpContentExtension
     {
         public static async Task<T> ReadAsAsync<T>(this HttpResponseMessage response)
