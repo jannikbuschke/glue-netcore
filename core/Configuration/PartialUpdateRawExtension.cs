@@ -13,7 +13,7 @@ namespace EfConfigurationProvider
             Dictionary<string, string> values = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             return new PartialUpdate
             {
-                Path = value.Path,
+                ConfigurationId = value.ConfigurationId,
                 Values = values.Select(v => new ConfigurationValue { Name = v.Key, Value = v.Value }).ToArray()
             };
         }

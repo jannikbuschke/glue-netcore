@@ -5,7 +5,7 @@ namespace EfConfigurationProvider
 {
     public class PartialUpdate : IRequest
     {
-        public string Path { get; set; }
+        public string ConfigurationId { get; set; }
         public ConfigurationValue[] Values { get; set; }
     }
 }

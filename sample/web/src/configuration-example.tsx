@@ -16,93 +16,64 @@ import { useData } from "glow-react/es/query/use-data"
 import { HighlightableRow } from "glow-react/es/antd/highlightable-row"
 import { ActionButton } from "glow-react/es/antd/action-button"
 import { ActionBar } from "./layout"
+import { IPartialConfiguration } from "./models"
+import styled from "styled-components"
+import { StronglyTypedOptions } from "glow-react/es/configuration/strongly-typed-options"
 
-export function FilesExample() {
+export function ConfigurationsExample() {
   return (
     <Routes>
-      <Route path="portfolios" element={<MasterDetail />}>
-        <Route path="create" element={<Create />} />
-        <Route path=":portfolioId" element={<Detail />} />
+      <Route path="configurations" element={<MasterDetail />}>
+        <Route path=":configurationId" element={<Detail />} />
       </Route>
     </Routes>
   )
 }
 
-interface File {
-  id: string
-  name: string
-}
-interface Portfolio {
-  id: string
-  displayName: string
-  files: File[]
-}
-
 function Detail() {
-  const { portfolioId } = useParams()
-  const { data } = useData<Portfolio>(
-    `/odata/portfolios/${portfolioId}?$expand=files`,
-    {
-      id: "",
-      displayName: "",
-      files: [],
-    },
-  )
-  const navigate = useNavigate()
-  const [update] = useSubmit("/api/portfolios/update")
+  const { configurationId } = useParams()
+  const url = `/api/configurations/${configurationId}`
+  const { data } = useData<any>(url, {})
+  //   const navigate = useNavigate()
+  //   const [update] = useSubmit("/api/portfolios/update")
   return (
     <div style={{ maxWidth: 500 }}>
       <div>/detail</div>
-      <ActionBar>
-        <ActionButton
-          path="/api/portfolios/delete"
-          payload={{ id: data.id }}
-          danger={true}
-          onSuccess={() => navigate("..")}
-        >
-          Delete
-        </ActionButton>
-      </ActionBar>
-      <Formik
-        initialValues={{
-          id: portfolioId,
-          displayName: data.displayName,
-          files: data.files,
-        }}
-        enableReinitialize={true}
-        onSubmit={async (values) => {
-          const result = await update(values)
-          if (result) {
-            notification.success({ message: "success" })
-          }
-        }}
-      >
-        <CreateOrUpdate />
-      </Formik>
+      {/* <div>
+        <pre>{JSON.stringify({ configurationId, data }, null, 4)}</pre>
+      </div> */}
+      <StronglyTypedOptions
+        url={url}
+        title="Sample"
+        configurationId={configurationId}
+      />
     </div>
   )
 }
 
 function MasterDetail() {
   return (
-    <div
-      style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridGap: 10 }}
-    >
+    <MasterDetailContainer>
       <List />
       <Outlet />
-    </div>
+    </MasterDetailContainer>
   )
 }
 
+const MasterDetailContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10;
+`
+
 function List() {
-  const url = "/odata/portfolios?$expand=files"
-  const { data, refetch } = useData<{ value: Portfolio[] }>(url, {
-    value: [],
-  })
+  const url = "/api/__configuration/partial-configurations"
+  const { data, refetch } = useData<IPartialConfiguration[]>(url, [])
   const navigate = useNavigate()
   return (
     <div>
       <div>/list</div>
+      <div>{JSON.stringify(data, null, 4)}</div>
       <ActionBar>
         <Button onClick={() => refetch()}>Refresh</Button>
         <Button>
@@ -110,12 +81,12 @@ function List() {
         </Button>
       </ActionBar>
       <Table
-        dataSource={data.value}
+        dataSource={data}
         loading={!Boolean(data)}
         showHeader={false}
         size="small"
         pagination={false}
-        rowKey={(row) => row.id}
+        rowKey={(row) => row.route!}
         onRow={(row) => ({
           onClick: () => {
             navigate(`${row.id}`)
@@ -124,36 +95,16 @@ function List() {
         components={{
           body: {
             row: (props: any) => (
-              <HighlightableRow path="/portfolios/" {...props} />
+              <HighlightableRow path="/configurations/" {...props} />
             ),
           },
         }}
         columns={[
           {
-            dataIndex: "displayName",
+            dataIndex: "title",
           },
         ]}
       />
-    </div>
-  )
-}
-
-function Create() {
-  const [create] = useSubmit("/api/portfolios/create")
-  return (
-    <div style={{ maxWidth: 500 }}>
-      <div>/create</div>
-      <Formik
-        initialValues={{ id: null, displayName: "", files: [] }}
-        onSubmit={async (values) => {
-          const result = await create(values)
-          if (result) {
-            notification.success({ message: "success" })
-          }
-        }}
-      >
-        <CreateOrUpdate />
-      </Formik>
     </div>
   )
 }

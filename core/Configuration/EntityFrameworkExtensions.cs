@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EfConfigurationProvider.Core
 {
-
     public static class EntityFrameworkExtensions
     {
         internal static Action<DbContextOptionsBuilder> optionsAction;
@@ -33,12 +32,16 @@ namespace EfConfigurationProvider.Core
             services.AddSingleton((services) => new AssembliesCache(assemblies));
             //services.AddMvcCore().AddApplicationPart(typeof(EntityFrameworkExtensions).Assembly);
 
+            services.AddSingleton<PartialConfigurations>();
+
             services.AddMvcCore(options =>
             {
                 options.Conventions.Add(new GenericControllerRouteConvention());
-            }).ConfigureApplicationPartManager(m =>
-                m.FeatureProviders.Add(new GenericTypeControllerFeatureProvider(assemblies)
-            ));
+            })
+            .ConfigureApplicationPartManager(m =>
+            {
+                m.FeatureProviders.Add(new GenericTypeControllerFeatureProvider(assemblies));
+            });
 
             return services;
         }

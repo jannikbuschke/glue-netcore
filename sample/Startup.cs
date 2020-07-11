@@ -1,6 +1,7 @@
 using System.Net;
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
+using EfConfigurationProvider.Core;
 using Glow.Core;
 using MediatR;
 using Microsoft.AspNet.OData.Builder;
@@ -14,13 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.Services.Common;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Glow.Core;
+using RT;
 
 namespace Glow.Sample
 {
@@ -40,11 +35,12 @@ namespace Glow.Sample
                 options.EnableEndpointRouting = false;
             });
             services.AddGlow();
-            services.AddMediatR(typeof(Startup));
-            services.AddAutoMapper(cfg =>
-            {
-                cfg.AddCollectionMappers();
-            }, typeof(Startup));
+            services.AddEfConfiguration(options => { }, new[] { typeof(Startup).Assembly });
+
+            services.AddTransient<IStartupFilter, CreateTypescriptDefinitions>();
+
+            services.AddMediatR(typeof(Startup), typeof(Clocks.Clock));
+            services.AddAutoMapper(cfg => { cfg.AddCollectionMappers(); }, typeof(Startup));
 
             services.AddDbContext<DataContext>(options =>
             {

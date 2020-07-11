@@ -19,16 +19,25 @@ namespace EfConfigurationProvider.Core
         private readonly ConfigurationRoot configuration;
         private readonly ConfigurationProvider provider;
         private readonly IMediator mediator;
-        private readonly AssembliesCache assemblies;
         private readonly AuthorizationService authorizationService;
+        private readonly PartialConfigurations partialConfigurations;
 
-        public ConfigurationController(IConfiguration configuration, IMediator mediator, AssembliesCache assemblies, AuthorizationService authorizationService)
+        public ConfigurationController(
+            IConfiguration configuration,
+            IMediator mediator,
+            AuthorizationService authorizationService,
+            PartialConfigurations partialConfigurations
+        )
         {
             this.configuration = configuration as ConfigurationRoot;
-            provider = this.configuration.Providers.OfType<ConfigurationProvider>().First();
+            provider = this.configuration.Providers.OfType<ConfigurationProvider>().FirstOrDefault();
+            if (provider == null)
+            {
+                throw new System.Exception("ConfigurationProvider not found. Did you forget add GlowConfiguration?");
+            }
             this.mediator = mediator;
-            this.assemblies = assemblies;
             this.authorizationService = authorizationService;
+            this.partialConfigurations = partialConfigurations;
         }
 
         [HttpGet("values")]
@@ -77,13 +86,27 @@ namespace EfConfigurationProvider.Core
         }
 
         [HttpGet("partial-configurations")]
-        public IEnumerable<GeneratedControllerAttribute> GetPartialConfigurations()
+        public IEnumerable<IPartialConfiguration> GetPartialConfigurations()
         {
-            IEnumerable<GeneratedControllerAttribute> attributes = assemblies
+            return partialConfigurations.Get();
+        }
+    }
+
+    public class PartialConfigurations
+    {
+        private readonly AssembliesCache assemblies;
+
+        public PartialConfigurations(AssembliesCache assemblies)
+        {
+            this.assemblies = assemblies;
+        }
+
+        public IEnumerable<PartialConfigurationDto> Get()
+        {
+            IEnumerable<PartialConfigurationDto> attributes = assemblies
                 .SelectMany(v => v.GetExportedTypes().Where(v => v.GetCustomAttributes(typeof(GeneratedControllerAttribute), true).Any())
                     .SelectMany(v => v.GetCustomAttributes<GeneratedControllerAttribute>())
-                );
-
+                ).Select(v => v.ToPartialConfiguration());
             return attributes;
         }
     }

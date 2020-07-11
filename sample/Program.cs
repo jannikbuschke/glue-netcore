@@ -1,16 +1,21 @@
 using System;
+using System.IO;
+using EfConfigurationProvider.Core;
 using Glow.GlowStartup;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Glow.Sample
 {
     public class Program
     {
+
+
+
         public static int Main(string[] args)
         {
             Log.Logger = GetPreStartLogger();
@@ -40,7 +45,25 @@ namespace Glow.Sample
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
-            return GlowStartup.Program.CreateDefaultWebHostBuilder<Startup>(args);
+            return GlowStartup.Program.CreateDefaultWebHostBuilder<Startup>(args)
+                .UseConfiguration(new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddEnvironmentVariables()
+                    .Build())
+                .ConfigureAppConfiguration((ctx, config) =>
+                {
+                    IConfigurationRoot cfg = config.Build();
+
+                    var cs = cfg.GetValue<string>("ConnectionString");
+                    if (cs != null)
+                    {
+                        config.AddEFConfiguration(options => options.UseSqlServer(cs, configure =>
+                        {
+                            configure.MigrationsAssembly(typeof(EntityFrameworkExtensions).Assembly.FullName);
+                        }));
+                    }
+                });
         }
 
         private static string EnvironmentName

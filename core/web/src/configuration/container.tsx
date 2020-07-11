@@ -58,12 +58,12 @@ function Main({
           <Route exact={true} path={["/all", "/"]}>
             <DataTable />
           </Route>
-          {data &&
+          {/* {data &&
             data.map((v) => (
               <Route path={"/" + v.route}>
                 <StronglyTypedOptions path={v.route} title={v.title} />
               </Route>
-            ))}
+            ))} */}
         </div>
       </Content>
       <Footer style={{ textAlign: "center" }}>Configuration</Footer>

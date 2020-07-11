@@ -4,6 +4,7 @@ import { Formik } from "formik"
 import { message, Alert, PageHeader, Divider } from "antd"
 import { Input, Switch, InputNumber, SubmitButton, Form } from "formik-antd"
 import { useActions, badRequestResponseToFormikErrors } from "./validation"
+import { useData } from "../query/use-data"
 
 function toType(type: string, name: string) {
   switch (type) {
@@ -20,24 +21,25 @@ function toType(type: string, name: string) {
 
 interface Props {
   title: string
-  path: string
   url: string
+  configurationId: string
 }
 
-export function StronglyTypedOptions({ path, title, url }: Props) {
+export function StronglyTypedOptions({ title, url, configurationId }: Props) {
   const { submit } = useActions(url)
-  const { data, error, revalidate } = useSWR(url)
-
+  // const { data, error, revalidate } = useSWR(url)
+  const { data, error } = useData<any>(url, {})
+  console.log({ data, error, url })
   return (
     <div style={{ maxWidth: 1200, background: "#fff" }}>
-      {error && <Alert type="error" message={error.toString()} />}
+      {error && <Alert type="error" message={(error as any).toString()} />}
       <Formik
         initialValues={data}
         enableReinitialize={true}
         onSubmit={async (values, actions) => {
           console.log("submit")
           actions.setSubmitting(true)
-          const r = await submit({ path, value: values })
+          const r = await submit({ configurationId, value: values })
           actions.setSubmitting(false)
           if (r.ok) {
             message.success("success")
