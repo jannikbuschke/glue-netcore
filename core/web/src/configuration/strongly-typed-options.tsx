@@ -105,6 +105,8 @@ export function StronglyTypedOptions({
     name ? url + "/" + name : url,
     {},
   )
+  // Todo: use to auto generate ui
+  const { data: typeDescription } = useData<any>(url + "/__description", {})
   const overrideEditors =
     rest.type === "editors" || rest.type === undefined
       ? rest.overrideEditors

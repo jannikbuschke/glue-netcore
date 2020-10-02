@@ -1,4 +1,4 @@
-﻿namespace Glow.Configurations
+namespace Glow.Configurations
 {
     public class Meta : IConfigurationMeta
     {

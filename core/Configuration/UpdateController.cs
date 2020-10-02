@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
@@ -67,7 +68,6 @@ namespace Glow.Configurations
         [HttpGet("{name}")]
         public async Task<ActionResult<T>> Get(string name)
         {
-            Log.Logger.Information("name " + name);
             var isAllowed = await authorization.ReadPartialAllowed(Request.Path.Value);
             if (!isAllowed)
             {
@@ -83,6 +83,7 @@ namespace Glow.Configurations
             return options;
         }
 
+        [Obsolete]
         [HttpGet("from-options")]
         public ActionResult<T> GetFromOptions([FromServices] IOptionsSnapshot<T> options)
         {
@@ -91,6 +92,29 @@ namespace Glow.Configurations
                 return options.Value;
             }
             return NotFound();
+        }
+
+        [HttpGet("__description")]
+        public TypeDescription GetDescription()
+        {
+            return GetDescription(typeof(T));
+        }
+
+        private TypeDescription GetDescription(Type t)
+        {
+            return new TypeDescription
+            {
+                Name = t.FullName,
+                IsClass = t.IsClass,
+                IsPrimitive = t.IsPrimitive,
+                IsGenericType = t.IsGenericType,
+                IsEnum = t.IsEnum,
+                Properties = t.IsPrimitive ? null : t.GetProperties().Select(v => new PropertyDescription
+                {
+                    Name = v.Name,
+                    TypeDescription = GetDescription(v.PropertyType)
+                }).ToList()
+            };
         }
 
         [HttpPost]
@@ -108,5 +132,21 @@ namespace Glow.Configurations
             await mediator.Send(value.ToConfigurationUpdate());
             return Ok();
         }
+    }
+
+    public class TypeDescription
+    {
+        public string Name { get; set; }
+        public bool IsClass { get; set; }
+        public bool IsGenericType { get; set; }
+        public bool IsPrimitive { get; set; }
+        public bool IsEnum { get; set; }
+        public IEnumerable<PropertyDescription> Properties { get; set; }
+    }
+
+    public class PropertyDescription
+    {
+        public string Name { get; set; }
+        public TypeDescription TypeDescription { get; set; }
     }
 }
