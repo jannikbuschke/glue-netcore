@@ -1,13 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
+using System.Reflection;
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Glow.Configurations;
 using Glow.Core;
+using Glow.Core.EfCore;
 using Glow.Sample.Configurations;
 using Glow.Sample.Users;
+using Glow.TypeScript;
 using JannikB.Glue.AspNetCore.Tests;
 using MediatR;
-using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,10 +23,45 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.Services.Common;
-using RT;
 
 namespace Glow.Sample
 {
+    public class Test : TypeScriptProfile
+    {
+        public Test()
+        {
+            Add<Foo>();
+            Add<Bar>();
+        }
+
+        public class Foo
+        {
+            public string Property0 { get; set; }
+            public int Property1 { get; set; }
+            public int? Property2 { get; set; }
+            public Guid Property3 { get; set; }
+            public Guid? Property4 { get; set; }
+            public DateTime? Property5 { get; set; }
+            public DateTime Property6 { get; set; }
+            //public Dictionary<string,int> Property7 { get; set; }
+            public Bar Property8 { get; set; }
+            public string[] Property9 { get; set; }
+            public IEnumerable<int> Property10 { get; set; }
+            public IEnumerable<string> Property11 { get; set; }
+            public List<Bar> Property12 { get; set; }
+            public Collection<Bar> Property13 { get; set; }
+            public Dictionary<string, string> MyProperty14 { get; set; }
+            public Dictionary<string, object> MyProperty15 { get; set; }
+            public Dictionary<string, long> MyProperty16 { get; set; }
+            public Dictionary<string, Bar> MyProperty17 { get; set; }
+        }
+
+        public class Bar
+        {
+            public int Property0 { get; set; }
+        }
+    }
+
     public class Startup
     {
         private readonly IConfiguration configuration;
@@ -57,14 +97,13 @@ namespace Glow.Sample
                 options.SetPartialWritePolicy("sample-configuration", "test-policy");
             }, new[] { typeof(Startup).Assembly });
 
-            services.AddTransient<IStartupFilter, CreateTypescriptDefinitions>();
-
             services.AddMediatR(typeof(Startup), typeof(Clocks.Clock));
             services.AddAutoMapper(cfg => { cfg.AddCollectionMappers(); }, typeof(Startup));
 
             services.AddDbContext<DataContext>(options =>
             {
-                options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=glow-sample;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+                options.UseInMemoryDatabase("test");
+                //options.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=glow-sample;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
                 options.EnableSensitiveDataLogging(true);
             });
 
@@ -76,14 +115,18 @@ namespace Glow.Sample
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
             });
-            services.AddOData().EnableApiVersioning();
             services.AddOptions();
+
+            services.AddSignalR();
+
+            services.AddTypescriptGeneration(new[] { Assembly.GetExecutingAssembly() });
+            services.AddTransient<IStartupFilter, GenerateApiClientsAtStartup>();
+            services.AddTransient<IStartupFilter, CreateTypescriptDefinitions>();
         }
 
         public void Configure(
             IApplicationBuilder app,
-            IWebHostEnvironment env,
-            VersionedODataModelBuilder modelBuilder
+            IWebHostEnvironment env
         )
         {
             if (env.IsDevelopment())
@@ -92,14 +135,13 @@ namespace Glow.Sample
             }
 
             app.UseAuthentication();
+            app.UseRouting();
+
             app.UseAuthorization();
 
             app.UseMvc(routes =>
             {
-                routes.SetTimeZoneInfo(System.TimeZoneInfo.Utc);
-                routes.Select().Expand().Filter().OrderBy().MaxTop(100).Count();
-                routes.MapVersionedODataRoutes("odata", "odata", modelBuilder.GetEdmModels());
-                routes.EnableDependencyInjection();
+                routes.SetTimeZoneInfo(TimeZoneInfo.Utc);
             });
 
             app.Map("/hello", app =>
@@ -110,7 +152,12 @@ namespace Glow.Sample
                 });
             });
 
-            new string[] { "/odata", "/api" }.ForEach(v =>
+            app.UseEndpoints(v =>
+            {
+                v.MapHub<DbNotificationHub>("/notifications/db-changes");
+            });
+
+            new string[] { "/odata", "/api", "/notifications" }.ForEach(v =>
             {
                 app.Map(v, app =>
                 {

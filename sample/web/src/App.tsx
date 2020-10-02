@@ -1,22 +1,36 @@
 import React from "react"
-import { Space } from "antd"
+import { Menu, notification, Space } from "antd"
 import "antd/dist/antd.css"
 import { FilesExample } from "./files-example"
 import { BrowserRouter as Router, Link } from "react-router-dom"
 import { ConfigurationsExample } from "./configuration-example"
 import styled from "styled-components"
+import { DbNotificationsExample } from "./db-notifications"
+import { useInitializeDbChanges } from "glow-react/es/db-notifications"
 
 function App() {
+  useInitializeDbChanges()
+
   return (
     <Router>
       <Container>
-        <Space>
-          <Link to="/portfolios/">Portfolios</Link>
-          <Link to="/configurations/">Configurations</Link>
-        </Space>
+        <div>
+          <Menu mode="horizontal">
+            <Menu.Item>
+              <Link to="/files/">Files</Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link to="/configurations/">Configurations</Link>
+            </Menu.Item>
+            <Menu.Item>
+              <Link to="/db-notifications/">Db Notifications</Link>
+            </Menu.Item>
+          </Menu>
+        </div>
         <Content>
           <FilesExample />
           <ConfigurationsExample />
+          <DbNotificationsExample />
         </Content>
         {/* <Tabs style={{ margin: 100 }}>
           <Tabs.TabPane tab="Portfolios">
@@ -38,7 +52,7 @@ const Container = styled.div`
 const Content = styled.div`
   display: flex;
   flex: 1;
-  justify-content: center;
+  padding: 40px;
 `
 
 export default App

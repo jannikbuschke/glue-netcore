@@ -15,7 +15,8 @@
     "react-router": "6.0.0-alpha.4",
     "react-scripts": "3.4.1",
     "glow-react": "0.7.0",
-    "react-query": "1.5.1"
+    "react-query": "1.5.1",
+    "@microsoft/signalr": "3.1.8"
   },
   "scripts": {
     "start": "react-app-rewired start",
@@ -45,7 +46,8 @@
     "react-app-rewired": "2.1.6",
     "less-loader": "6.1.0",
     "source-map-explorer": "2.4.2",
-    "jest-dom": "4.0.0"
+    "jest-dom": "4.0.0",
+    "mitt": "2.1.0"
   },
   "browserslist": [
     ">0.2%",

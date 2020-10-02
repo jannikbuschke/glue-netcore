@@ -16,11 +16,13 @@ import { useData } from "glow-react/es/query/use-data"
 import { HighlightableRow } from "glow-react/es/antd/highlightable-row"
 import { ActionButton } from "glow-react/es/antd/action-button"
 import { ActionBar } from "./layout"
+import { EntityChanged } from "./models"
+import { useMitt } from "glow-react/es/mitt"
 
 export function FilesExample() {
   return (
     <Routes>
-      <Route path="portfolios" element={<MasterDetail />}>
+      <Route path="files" element={<MasterDetail />}>
         <Route path="create" element={<Create />} />
         <Route path=":portfolioId" element={<Detail />} />
       </Route>
@@ -41,7 +43,7 @@ interface Portfolio {
 function Detail() {
   const { portfolioId } = useParams()
   const { data } = useData<Portfolio>(
-    `/odata/portfolios/${portfolioId}?$expand=files`,
+    `/api/portfolios/${portfolioId}?$expand=files`,
     {
       id: "",
       displayName: "",
@@ -95,10 +97,17 @@ function MasterDetail() {
 }
 
 function List() {
-  const url = "/odata/portfolios?$expand=files"
-  const { data, refetch } = useData<{ value: Portfolio[] }>(url, {
-    value: [],
-  })
+  const url = "/api/portfolios/list?$expand=files"
+  const { data, refetch } = useData<Portfolio[]>(url, [])
+  const { emitter } = useMitt()
+
+  React.useEffect(() => {
+    emitter.on("DbChanged", (v) => {
+      const changes: EntityChanged[] = v
+      console.log("changes", changes)
+      refetch()
+    })
+  }, [])
   const navigate = useNavigate()
   return (
     <div>
@@ -110,7 +119,7 @@ function List() {
         </Button>
       </ActionBar>
       <Table
-        dataSource={data.value}
+        dataSource={data}
         loading={!Boolean(data)}
         showHeader={false}
         size="small"

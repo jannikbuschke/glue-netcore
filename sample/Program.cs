@@ -24,7 +24,11 @@ namespace Glow.Sample
                 Log.Information($"Build host {name}");
                 IWebHost host = CreateWebHostBuilder(args).Build();
 
-                host.MigrateDatabase<DataContext>();
+                //host.MigrateDatabase<DataContext>();
+
+                var db = host.Services.GetService(typeof(DataContext)) as DataContext;
+                db.Portfolios.Add(new Files.Portfolio { DisplayName = "test" });
+                var r = db.SaveChangesAsync().Result;
 
                 host.Run();
                 return 0;
@@ -48,6 +52,7 @@ namespace Glow.Sample
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
+                .UseSerilog()
                 .ConfigureAppConfiguration((ctx, config) =>
                 {
                     IConfigurationRoot cfg = config.Build();

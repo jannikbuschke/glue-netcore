@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Glow.Core.FakeData;
+using Glow.TypeScript;
 using Glue.Files;
 using JannikB.AspNetCore.Utils.Module;
 using JannikB.Glue;
@@ -16,6 +17,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Glow.Sample.Files
 {
+    public class Test : TypeScriptProfile
+    {
+        public Test()
+        {
+            Add<PutPortfolioFile>();
+            Add<CreatePortfolio>();
+            Add<UpdatePortfolio>();
+            Add<Portfolio>();
+            Add<PortfolioFile>();
+        }
+    }
+
     public class FilesProfile : Profile
     {
         public FilesProfile()
@@ -41,18 +54,18 @@ namespace Glow.Sample.Files
     public class UpdatePortfolio : IRequest<Portfolio>
     {
         public string DisplayName { get; set; }
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public IEnumerable<PutPortfolioFile> Files { get; set; }
     }
 
     public class DeletePortfolio : IRequest
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
     }
 
     public class Portfolio
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string DisplayName { get; set; }
         public ICollection<PortfolioFile> Files { get; set; }
     }
@@ -69,7 +82,7 @@ namespace Glow.Sample.Files
         public FakePortfolios() : base(f =>
         {
             return f
-            .RuleFor(v => v.Id, f => Guid.NewGuid())
+            .RuleFor(v => v.Id, f => f.IndexFaker)
             .RuleFor(v => v.Files, f => Enumerable.Range(2, f.Random.Number(1, 5)).Select(v => new PortfolioFile
             {
                 Id = Guid.NewGuid(),
@@ -123,6 +136,7 @@ namespace Glow.Sample.Files
     }
 
     [Route("api/portfolios")]
+    [Route("api/portfolio")]
     [ApiController]
     public class PortfoliosController : ControllerBase
     {
@@ -164,7 +178,7 @@ namespace Glow.Sample.Files
 
         [HttpPost("stage-files")]
         [RequestSizeLimit(52428800)]
-        public async Task<ActionResult<IEnumerable<PortfolioFile>>> Stage()
+        public async Task<ActionResult<IEnumerable<PortfolioFile>>> Stage(Unit request)
         {
             IList<PortfolioFile> result = await fileService.WriteFormfilesToPath<PortfolioFile>(Request.Form.Files, "runtime-files");
             ctx.PortfolioFiles.AddRange(result);
@@ -177,10 +191,22 @@ namespace Glow.Sample.Files
         {
             return examples.Data;
         }
+
+        [HttpGet("list")]
+        public IQueryable<Portfolio> List()
+        {
+            return ctx.Portfolios.Include(v => v.Files);
+        }
+
+        [HttpGet("{id}")]
+        public Portfolio Single(int id)
+        {
+            return ctx.Portfolios.Include(v => v.Files).Single(v => v.Id == id);
+        }
     }
 
     [ODataRoutePrefix("Portfolios")]
-    public class PortfoliosOdataController : BaseOdataController<Portfolio, Guid>
+    public class PortfoliosOdataController : BaseOdataController<Portfolio, int>
     {
         public PortfoliosOdataController(DataContext ctx)
             : base(ctx.Portfolios, key => ctx.Portfolios.Where(v => v.Id == key))

@@ -2,13 +2,35 @@
 //     Changes to this file may cause incorrect behavior and will be lost if
 //     the code is regenerated.
 
-export interface Profile
+export interface Portfolio
+{
+	id: number;
+	displayName: string|null;
+	files: PortfolioFile[];
+}
+export interface PortfolioFile
+{
+	id: string;
+	name: string|null;
+	path: string|null;
+}
+export interface UpdatePortfolio
 {
 	displayName: string|null;
-	id: string|null;
-	email: string|null;
-	identityName: string|null;
-	isAuthenticated: boolean;
+	id: number;
+	files: any[];
+}
+export interface CreatePortfolio
+{
+	displayName: string|null;
+	files: any[];
+}
+export interface DeletePortfolio
+{
+	id: number;
+}
+export interface Unit
+{
 }
 export interface IConfigurationMeta
 {
@@ -16,4 +38,10 @@ export interface IConfigurationMeta
 	title: string|null;
 	id: string|null;
 	sectionId: string|null;
+}
+export interface EntityChanged
+{
+	key: { [key:string]: any };
+	state: number;
+	entityName: string|null;
 }
