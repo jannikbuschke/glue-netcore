@@ -9,31 +9,29 @@ steps:
 - checkout: self
   submodules: true
 
-# - script: 'ls'
+- task: NuGetToolInstaller@1
+  inputs:
+    versionSpec: '5.x'
 
-# - task: NuGetToolInstaller@1
-#   inputs:
-#     versionSpec: '5.x'
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 3.1.201
+    installationPath: $(Agent.ToolsDirectory)/dotnet
 
-# - task: UseDotNet@2
-#   displayName: 'Use .NET Core sdk'
-#   inputs:
-#     packageType: sdk
-#     version: 3.1.201
-#     installationPath: $(Agent.ToolsDirectory)/dotnet
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet restore'
+  inputs:
+    command: 'restore'
 
-# - task: DotNetCoreCLI@2
-#   displayName: 'dotnet restore'
-#   inputs:
-#     command: 'restore'
-
-# - task: DotNetCoreCLI@2
-#   displayName: 'dotnet build'
-#   inputs:
-#     command: 'build'
-#     publishWebProjects: false # mutually exclusive with 'projects'
-#     projects: 'sample/sample.csproj'
-#     arguments: --configuration $(buildConfiguration)
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    command: 'build'
+    publishWebProjects: false # mutually exclusive with 'projects'
+    projects: 'sample/sample.csproj'
+    arguments: --configuration $(buildConfiguration)
 
 # - task: DotNetCoreCLI@2
 #   inputs:
