@@ -1,6 +1,7 @@
 
 trigger:
 - master
+- build-sample
 pool:
   vmImage: 'windows-2019'
 
@@ -29,7 +30,7 @@ steps:
   inputs:
     command: 'build'
     publishWebProjects: false # mutually exclusive with 'projects'
-    projects: './app/*.csproj'
+    projects: './sample/*.csproj'
     arguments: --configuration $(buildConfiguration)
 
 # - task: DotNetCoreCLI@2
@@ -78,7 +79,7 @@ steps:
     REACT_APP_BUILD_ID: $(Build.BuildNumber)
   inputs:
     command: 'install'
-    workingDir: './app/web'
+    workingDir: './sample/web'
 
 - task: Npm@1
   displayName: 'npm run build'
@@ -86,7 +87,7 @@ steps:
     REACT_APP_BUILD_ID: $(Build.BuildNumber)
   inputs:
     command: 'custom'
-    workingDir: './app/web'
+    workingDir: './sample/web'
     customCommand: 'run build'
 
 - task: DotNetCoreCLI@2
@@ -94,7 +95,7 @@ steps:
   inputs:
     command: 'publish'
     publishWebProjects: false # mutually exclusive with 'projects'
-    projects: './app/*.csproj'
+    projects: './sample/*.csproj'
     arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
 
 - task: PublishBuildArtifacts@1
@@ -107,7 +108,7 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'publish arm template'
   inputs:
-    PathtoPublish: './build'
+    PathtoPublish: './sample/build'
     ArtifactName: 'deploy'
     publishLocation: 'Container'
 
