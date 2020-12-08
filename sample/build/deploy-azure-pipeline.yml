@@ -1,7 +1,7 @@
 resources:
   pipelines:
   - pipeline: 'build'  # Name of the pipeline resource
-    source: teams-hub # Name of the triggering pipeline
+    source: $(source_pipeline) # Name of the triggering pipeline
     #project: General
     # trigger: 
     #   branches:
