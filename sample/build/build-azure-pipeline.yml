@@ -73,13 +73,13 @@ steps:
     command: 'custom'
     customCommand: 'run tsc'
 
-- task: Npm@1
-  displayName: 'npm install'
-  env:
-    REACT_APP_BUILD_ID: $(Build.BuildNumber)
-  inputs:
-    command: 'install'
-    workingDir: './sample/web'
+# - task: Npm@1
+#   displayName: 'npm install'
+#   env:
+#     REACT_APP_BUILD_ID: $(Build.BuildNumber)
+#   inputs:
+#     command: 'install'
+#     workingDir: './sample/web'
 
 - task: Npm@1
   displayName: 'npm run build'
