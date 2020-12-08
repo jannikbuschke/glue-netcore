@@ -30,7 +30,7 @@ steps:
   inputs:
     command: 'build'
     publishWebProjects: false # mutually exclusive with 'projects'
-    projects: 'sample/sample.csproj'
+    projects: 'sample/*.csproj'
     arguments: --configuration $(buildConfiguration)
 
 # - task: DotNetCoreCLI@2
@@ -95,7 +95,7 @@ steps:
   inputs:
     command: 'publish'
     publishWebProjects: false # mutually exclusive with 'projects'
-    projects: './sample/*.csproj'
+    projects: 'sample/*.csproj'
     arguments: --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
 
 - task: PublishBuildArtifacts@1
