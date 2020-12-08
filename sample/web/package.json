@@ -14,7 +14,7 @@
     "react-router-dom": "6.0.0-alpha.4",
     "react-router": "6.0.0-alpha.4",
     "react-scripts": "3.4.1",
-    "glow-react": "0.11.0",
+    "glow-react": "0.11.2",
     "react-query": "1.5.1",
     "@ant-design/icons": "4.2.2",
     "mitt": "1.2.0"
