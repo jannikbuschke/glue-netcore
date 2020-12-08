@@ -32,7 +32,7 @@ steps:
   inputs:
     command: 'build'
     publishWebProjects: false # mutually exclusive with 'projects'
-    projects: '../*.csproj'
+    projects: './sample/sample.csproj'
     arguments: --configuration $(buildConfiguration)
 
 # - task: DotNetCoreCLI@2
