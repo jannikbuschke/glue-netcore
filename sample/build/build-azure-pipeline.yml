@@ -9,6 +9,8 @@ steps:
 - checkout: self
   submodules: true
 
+- script: 'ls'
+
 - task: NuGetToolInstaller@1
   inputs:
     versionSpec: '5.x'
