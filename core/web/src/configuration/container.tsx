@@ -1,9 +1,8 @@
 import * as React from "react"
 import { Layout, Menu, Breadcrumb, Alert } from "antd"
-import { DataTable } from "./table"
+// import { DataTable } from "./table"
 import { Route, BrowserRouter, Link } from "react-router-dom"
 import { StronglyTypedOptions } from "./strongly-typed-options"
-import useSWR, { SWRConfig } from "swr"
 
 const { Header, Content, Footer, Sider } = Layout
 
@@ -56,7 +55,7 @@ function Main({
         )}
         <div>
           <Route exact={true} path={["/all", "/"]}>
-            <DataTable />
+            {/* <DataTable /> */}
           </Route>
           {/* {data &&
             data.map((v) => (
@@ -71,24 +70,24 @@ function Main({
   )
 }
 
-export function ConfigurationView() {
-  const { data, error } = useSWR<GeneratedControllerAttribute[]>(
-    "/api/__configuration/partial-configurations",
-    getJson,
-  )
-  return (
-    <SWRConfig
-      value={{
-        refreshInterval: 0,
-        fetcher: getJson,
-      }}
-    >
-      <BrowserRouter basename={"__configuration"}>
-        <Layout style={{ minHeight: "100vh" }}>
-          <Sidebar data={data} />
-          <Main error={error} data={data} />
-        </Layout>
-      </BrowserRouter>
-    </SWRConfig>
-  )
-}
+// export function ConfigurationView() {
+//   const { data, error } = useSWR<GeneratedControllerAttribute[]>(
+//     "/api/__configuration/partial-configurations",
+//     getJson,
+//   )
+//   return (
+//     <SWRConfig
+//       value={{
+//         refreshInterval: 0,
+//         fetcher: getJson,
+//       }}
+//     >
+//       <BrowserRouter basename={"__configuration"}>
+//         <Layout style={{ minHeight: "100vh" }}>
+//           <Sidebar data={data} />
+//           <Main error={error} data={data} />
+//         </Layout>
+//       </BrowserRouter>
+//     </SWRConfig>
+//   )
+// }

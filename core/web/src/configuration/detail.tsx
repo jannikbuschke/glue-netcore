@@ -25,7 +25,7 @@ export function AllConfigurationsDetailView() {
   return (
     <Container>
       <Card
-        loading={status === "loading"}
+        loading={(status as any) === "loading"}
         title={data.id}
         size="small"
         bordered={true}
