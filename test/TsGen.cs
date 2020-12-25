@@ -26,16 +26,22 @@ namespace Glow.Test
         public string DisplayName { get; set; }
     }
 
+    public class Generic<T>
+    {
+        public IEnumerable<T> GenericValues { get; set; }
+    }
+
     public class TsGen
     {
         [Fact]
         public void Foo()
         {
-            var builder = new TypeCollection();
+            var builder = new TypeCollectionBuilder();
 
             builder.Add<IEnumerable<string>>();
             builder.Add<Dictionary<string, object>>();
 
+            builder.Add<Generic<Foo>>();
 
             builder.Add<string>();
             builder.Add<Bar>();

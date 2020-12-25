@@ -5,14 +5,23 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Glow.TypeScript;
+using OneOf;
 
 namespace Glow.Core.Typescript
 {
     public class TypeCollection
     {
+        public Dictionary<string, TsType> Types { get; set; }
+        public Dictionary<string, TsEnum> Enums { get; set; }
+    }
+
+    public class TypeCollectionBuilder
+    {
         private readonly IList<Type> types = new List<Type>();
         private readonly Dictionary<string, TsType> tsTypes = new Dictionary<string, TsType>();
+        private readonly Dictionary<string, TsEnum> tsEnums = new Dictionary<string, TsEnum>();
 
         public void Add<T>()
         {
@@ -32,47 +41,63 @@ namespace Glow.Core.Typescript
             }
         }
 
-        public Dictionary<string, TsType> Generate()
+        public TypeCollection Generate()
         {
             foreach (Type type in types)
             {
-                TsType result = CreateOrGet(type);
+                OneOf<TsType, TsEnum> result = CreateOrGet(type);
             }
-            return tsTypes;
+            return new TypeCollection {
+                Types = tsTypes,
+                Enums = tsEnums
+            };
         }
 
-        private TsType CreateOrGet(Type type)
+        private OneOf<TsType,TsEnum> CreateOrGet(Type type)
         {
-            if (IsPrimitive(type))
+            if (type.IsEnum)
             {
-                TsType valueType = GetPrimitive(type);
-                if (valueType != null)
+                TsEnum e = AsEnum(type);
+                tsEnums.TryAdd(e.Id, e);
+                Console.WriteLine("add enum " + e.Name);
+                return e;
+            }
+            else
+            {
+                if (IsPrimitive(type))
                 {
-                    return valueType;
+                    TsType valueType = GetPrimitive(type);
+                    if (valueType != null)
+                    {
+                        return valueType;
+                    }
                 }
-            }
 
-            //if (IsDictionary(type))
-            //{
-            //    return AsDictionary(type);
-            //}
+                //if (IsDictionary(type))
+                //{
+                //    return AsDictionary(type);
+                //}
 
-            if (IsEnumerableType(type))
-            {
-                return AsEnumerable(type);
-            }
+                if (IsEnumerableType(type))
+                {
+                    return AsEnumerable(type);
+                }
 
-            if (!tsTypes.ContainsKey(type.FullName))
-            {
-                tsTypes.Add(type.FullName, Create(type));
+                var id = type.FullName ?? (type.IsGenericParameter ? "T" : null);
+                if (!tsTypes.ContainsKey(id))
+                {
+                    TsType tsType = Create(type);
+                    tsType.Id = id;
+                    tsTypes.Add(id, tsType);
+                }
+                return tsTypes[id];
             }
-            return tsTypes[type.FullName];
         }
 
         private TsType AsEnumerable(Type type)
         {
             Type[] args = type.GenericTypeArguments;
-            TsType argTsType = CreateOrGet(args.First());
+            TsType argTsType = CreateOrGet(args.First()).AsT0;
             return new TsType
             {
                 Name = argTsType.Name+"[]",
@@ -86,7 +111,7 @@ namespace Glow.Core.Typescript
             
             return new Tuple<string, string>
             (
-                $"{{ [key: {keyTsType.Name}]: {CreateOrGet(type).Name} }}",
+                $"{{ [key: {keyTsType.Name}]: {CreateOrGet(type).AsT0.Name} }}",
                 "{}"
             );
         }
@@ -105,6 +130,27 @@ namespace Glow.Core.Typescript
         private bool IsPrimitive(Type type)
         {
             return primitives.ContainsKey(type);
+        }
+
+        private TsEnum AsEnum(Type t)
+        {
+            IEnumerable<string> values = GetEnumValues(t);
+            return new TsEnum
+            {
+                Name = t.Name,
+                FullName = t.FullName,
+                DefaultValue = values.First(),
+                Values = values
+            };
+        }
+
+        private static IEnumerable<string> GetEnumValues(Type t)
+        {
+            Array values = Enum.GetValues(t);
+            foreach (var val in values)
+            {
+                yield return Enum.GetName(t, val);
+            }
         }
 
         private TsType GetPrimitive(Type type)
@@ -157,19 +203,64 @@ namespace Glow.Core.Typescript
 
         private TsType Create(Type type)
         {
-            var name = type.GenericTypeArguments.Length != 0
-                ? type.Name.Replace(".","").Replace("`","") + string.Join("", type.GenericTypeArguments.Select(v => v.Name))
+            if (type.GenericTypeArguments.Length != 0)
+            {
+
+            }
+
+            if (type.Name.StartsWith("QueryResu"))
+            {
+                Type[] params1 = type.GetGenericArguments();
+                Type[] args = type.GenericTypeArguments;
+                var hasParams = type.ContainsGenericParameters;
+            }
+
+            //type.GenericTypeParameters
+
+            if (type.IsGenericParameter)
+            {
+                return new TsType
+                {
+                    FullName = type.FullName??type.Name?? "T",
+                    DefaultValue = "{}",
+                    IsPrimitive = false,
+                    Name = type.Name?? "T",
+                    Type = type,
+                    Properties = new List<Property>()
+                };
+            }
+            Type[] genericTypeArguments = type.GenericTypeArguments;
+            Type[] genericArguments = type.GetGenericArguments();
+
+            var name = genericTypeArguments.Length != 0
+                ? type.Name.Replace(".","").Replace("`","") + string.Join("", genericTypeArguments.Select(v => v.Name))
+                : genericArguments.Length != 0
+                ? Regex.Replace(type.Name, "`.*$", "<" + string.Join(", ", genericArguments.Select(v => v.Name)) + ">")
                 : type.Name;
+
+            PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             var value = new TsType
             {
                 FullName = type.FullName,
                 Name = name,
                 Namespace = type.Namespace,
-                DefaultValue = "default"+name,
+                DefaultValue = genericArguments.Length != 0 ? null : "default" + name,
                 Type = type,
-                Properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                    .ToDictionary(v => v.Name.CamelCase(), v => CreateOrGet(v.PropertyType))
+                Properties = props
+                    // AsT0
+                    .Select(v =>
+                    {
+                        OneOf<TsType, TsEnum> tsType = CreateOrGet(v.PropertyType);
+                        var defaultValue = tsType.Match(v1 => v1.DefaultValue, v2 => $@"""{v2.DefaultValue}""");
+                        var typeName = tsType.Match(v1 => v1.Name, v2 => v2.Name);
+                        return new Property {
+                            PropertyName = v.Name.CamelCase(),
+                            DefaultValue = defaultValue,
+                            TsType =tsType.IsT0 ? tsType.AsT0 : null,
+                            TypeName = typeName,
+                        };
+                    }).ToList()
             };
             return value;
 
@@ -188,7 +279,7 @@ namespace Glow.Core.Typescript
         }
     }
 
-    public class TsType
+    public class TsEnum
     {
         public string Id
         {
@@ -197,6 +288,23 @@ namespace Glow.Core.Typescript
                 return FullName;
             }
         }
+
+        public string FullName { get; set; }
+        public string Name { get; set; }
+        public IEnumerable<string> Values { get; set; }
+        public string DefaultValue { get; set; }
+    }
+
+    public class TsType
+    {
+        //public string Id
+        //{
+        //    get
+        //    {
+        //        return FullName;
+        //    }
+        //}
+        public string Id { get; set; }
         public bool IsPrimitive { get; set; }
         public string FullName { get; set; }
         public string Name { get; set; }
@@ -207,22 +315,36 @@ namespace Glow.Core.Typescript
 
         public IEnumerable<TsType> Dependencies
         {
-            get { return Properties.Values; }
+            get { return Properties.Where(v => v.TsType != null).Select(v => v.TsType); }
         }
 
-        public Dictionary<string, TsType> Properties { get; set; }
+        //public Dictionary<string, TsType> Properties { get; set; }
+        public List<Property> Properties { get; set; }
+    }
+
+    public class Property
+    {
+        public string PropertyName { get; set; }
+        public string TypeName { get; set; }
+        public string DefaultValue { get; set; }
+        public TsType TsType { get; set; }
     }
 
     public static class Render
     {
-        public static void ToDisk(Dictionary<string, TsType> types, string path)
+        public static void ToDisk(TypeCollection types, string path)
         {
             var builder = new StringBuilder();
 
             builder.AppendLine($"/* this file is autogenerated. Do not edit. */");
             builder.AppendLine("");
 
-            foreach ((var key, TsType tsType) in types)
+            foreach ((var key, TsEnum tsEnum) in types.Enums)
+            {
+                RenderTsEnum(tsEnum, builder);
+            }
+
+            foreach ((var key, TsType tsType) in types.Types)
             {
                 RenderTsType(tsType, builder);
             }
@@ -240,6 +362,14 @@ namespace Glow.Core.Typescript
             File.WriteAllText(path, text);
         }
 
+        private static void RenderTsEnum(TsEnum type, StringBuilder builder)
+        {
+            var name = type.Name;
+            builder.AppendLine($"export type {name} = {string.Join(" | ", type.Values.Select(v=>$@"""{v}"""))}");
+            builder.AppendLine($@"export const default{name} = ""{type.DefaultValue}""");
+            builder.AppendLine("");
+        }
+
         private static void RenderTsType(TsType type, StringBuilder builder)
         {
             //var name = type.GenericTypeArguments.Length == 0
@@ -255,20 +385,23 @@ namespace Glow.Core.Typescript
 
             var name = type.Name;
             builder.AppendLine($"export interface {name} {{");
-            foreach (KeyValuePair<string, TsType> v in type.Properties)
+            foreach (Property v in type.Properties)
             {
-                builder.AppendLine($"  {v.Key}: {v.Value.Name}");
+                builder.AppendLine($"  {v.PropertyName}: {v.TypeName}");
             }
 
             builder.AppendLine("}");
             builder.AppendLine("");
 
-            builder.AppendLine($"export const default{name}: {name} = {{");
-            foreach ((var propertyName, TsType tsType) in type.Properties)
+            if (type.DefaultValue != null)
             {
-                builder.AppendLine($"  {propertyName}: {tsType.DefaultValue ?? "null"},");
+                builder.AppendLine($"export const default{name}: {name} = {{");
+                foreach (Property property in type.Properties)
+                {
+                    builder.AppendLine($"  {property.PropertyName}: {property.DefaultValue ?? "null"},");
+                }
+                builder.AppendLine("}");
             }
-            builder.AppendLine("}");
             builder.AppendLine("");
         }
     }
