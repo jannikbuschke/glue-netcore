@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test", "test\test.csproj", "{20F47ABA-B776-4593-80E5-990D7EA812CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core", "core\core.csproj", "{263C679A-8797-43F0-8EC3-0EB4AD0242B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "glow.core", "core\glow.core.csproj", "{263C679A-8797-43F0-8EC3-0EB4AD0242B3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sample", "sample\sample.csproj", "{0A454D6E-C8C0-4046-ADFC-B13D9750C936}"
 EndProject
