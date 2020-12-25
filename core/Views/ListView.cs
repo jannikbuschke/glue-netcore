@@ -11,9 +11,16 @@ namespace Glow.Core.Views
 
         [PaginateFilter]
         [HttpGet]
+        [Obsolete("use /query instead")]
         public IQueryable<T> Query(string search)
         {
             return Get(search);
+        }
+
+        [HttpPost("query")]
+        public QueryResult<T> Query(Query query)
+        {
+            return Get(query.Search).Apply(query);
         }
     }
 }

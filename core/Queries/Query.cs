@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Glow.TypeScript;
 
 namespace Glow.Core.Queries
 {
-   public enum Operation
+    public enum Operation
     {
         StartsWith = 1,
         Equals,
@@ -33,18 +34,32 @@ namespace Glow.Core.Queries
         Asc, Desc
     }
 
+    [GenerateTsInterface]
     public class Query
     {
+        public string Search { get; set; }
         public int? Take { get; set; }
         public int? Skip { get; set; }
         public Where Where { get; set; }
-        public OrderBy Orderby { get; set; }
+        public OrderBy OrderBy { get; set; }
+        public bool? Count { get; set; }
+    }
+
+    [GenerateTsInterface]
+    public class QueryResult<T>
+    {
+        public int? Count { get; set; }
+        public IEnumerable<T> Value { get; set; }
     }
 
     public static class QueryExtensions
     {
-        public static IEnumerable<T> Apply<T>(this IEnumerable<T> self, Query query)
+        public static QueryResult<T> Apply<T>(this IEnumerable<T> self, Query query)
         {
+            if (query == null)
+            {
+                throw new ArgumentException(nameof(query));
+            }
             Func<T, bool> where = CreateWhereExpression<T>(query.Where);
 
             if (where != null)
@@ -52,18 +67,27 @@ namespace Glow.Core.Queries
                 self = self.Where(where);
             }
 
-            Func<T, object> orderBy = CreateOrderByExpression<T>(query.Orderby.Property);
+            Func<T, object> orderBy = CreateOrderByExpression<T>(query.OrderBy?.Property);
 
             if (orderBy != null)
             {
-                self = query.Orderby.Direction == Direction.Asc
+                self = query.OrderBy.Direction == Direction.Asc
                     ? self.OrderBy(orderBy)
                     : self.OrderByDescending(orderBy);
             }
 
-            return self
+            int? count = null;
+            if (query.Count == true)
+            {
+                count = self.Count();
+            }
+            return new QueryResult<T>
+            {
+                Count = count,
+                Value = self
                 .Skip(query.Skip ?? 0)
-                .Take(query.Take ?? 10);
+                .Take(query.Take ?? 10)
+            };
         }
 
         private static Func<T, bool> CreateWhereExpression<T>(Where where)

@@ -5,6 +5,7 @@ import {} from "@ant-design/icons"
 import { MasterDetailView } from "glow-react/es/layouts/master-detail-view"
 import { List } from "glow-react"
 import { createBrowserHistory } from "history"
+import { ListContext } from "glow-react/es/list/list-context"
 
 export function MasterDetailViewExample() {
   return (
@@ -23,18 +24,20 @@ function Master() {
   return (
     <div style={{ flex: 1 }}>
       <PageHeader title="Master" onBack={() => history.back()} />
-      <List<any>
-        baseUrl="/api/list-view/data"
-        path="/master-detail/"
-        style={{ marginTop: 5 }}
-        size="small"
-        columns={[
-          {
-            title: "Name",
-            render: (row) => <span>{row.displayName}</span>,
-          },
-        ]}
-      />
+      <ListContext url="/api/list-view/data">
+        <List<any>
+          path="/master-detail/"
+          style={{ marginTop: 5 }}
+          size="small"
+          columns={[
+            {
+              title: "Name",
+              key: "Name",
+              render: (row) => <span>{row.displayName}</span>,
+            },
+          ]}
+        />
+      </ListContext>
     </div>
   )
 }
