@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Glow.TokenCache;
-using JannikB.Glue.AspNetCore;
-using JannikB.Invoices.Api.Test;
+using Glow.Glue.AspNetCore;
+using Glow.Invoices.Api.Test;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
 
     public class ActiveUsersCache

@@ -1,10 +1,11 @@
 using System.Linq;
+using Glow.Glue;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 
 
-namespace JannikB.Glue
+namespace Glow.Validation
 {
     public class ValidatableAttribute : ActionFilterAttribute
     {

@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace JannikB.Glue
+namespace Glow.Validation
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class RequiredIfTrueAttribute : RequiredAttribute

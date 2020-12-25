@@ -1,4 +1,4 @@
-namespace JannikB.Glue.AspNetCore.AzdoAuthentication
+namespace Glow.Glue.AspNetCore.AzdoAuthentication
 {
     using System;
     using System.Collections.Generic;

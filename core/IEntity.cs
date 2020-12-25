@@ -1,4 +1,4 @@
-namespace JannikB.AspNetCore.Utils.Module
+namespace Glow.AspNetCore.Utils.Module
 {
     public interface IEntity<T>
     {

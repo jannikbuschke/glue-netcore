@@ -8,7 +8,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     /// <summary>
     /// Allows to get access tokens

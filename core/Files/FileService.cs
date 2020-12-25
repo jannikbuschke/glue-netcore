@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Glue.Files
+namespace Glow.Files
 {
     public interface IFile
     {

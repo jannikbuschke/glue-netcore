@@ -8,9 +8,10 @@ using Glow.Core.Tests;
 using Glow.Sample;
 using Glow.Sample.Files;
 using Glow.Sample.Users;
-using Glue.Files;
-using JannikB.Glue.AspNetCore.Tests;
+using Glow.Files;
+using Glow.Glue.AspNetCore.Tests;
 using Xunit;
+using Glow.Users;
 
 namespace Glow.Test
 {

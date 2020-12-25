@@ -1,4 +1,4 @@
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     public class AzdoConfig
     {

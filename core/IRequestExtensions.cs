@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using MediatR;
 
-namespace JannikB.AspNetCore.Utils.Module
+namespace Glow.AspNetCore.Utils.Module
 {
     public static class IRequestExtensions
     {

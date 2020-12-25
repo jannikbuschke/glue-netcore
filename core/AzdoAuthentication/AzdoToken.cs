@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     [DataContract]
     public class AzdoToken

@@ -1,4 +1,5 @@
-using JannikB.Glue.AspNetCore.Tests;
+using Glow.Glue.AspNetCore.Tests;
+using Glow.Users;
 
 namespace Glow.Sample.Users
 {

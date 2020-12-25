@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-namespace JannikB.Glue.AspNetCore
+namespace Glow.Glue.AspNetCore
 {
     // TODO, create a generic statically typed version
     [ApiVersion("2.0")]

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     public static class SingletonOptionsStartupExtension
     {

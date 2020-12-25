@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     public static class StartupExtension
     {

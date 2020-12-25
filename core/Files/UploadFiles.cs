@@ -5,8 +5,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Bogus;
-using Glue.Files;
-using JannikB.Glue.AspNetCore.Tests;
+using Glow.Files;
+using Glow.Glue.AspNetCore.Tests;
+using Glow.Tests;
 
 namespace Glow.Core.Files
 {

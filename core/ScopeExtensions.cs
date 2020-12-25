@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace JannikB.Invoices.Api.Test
+namespace Glow.Invoices.Api.Test
 {
     public static class ScopeExtensions
     {

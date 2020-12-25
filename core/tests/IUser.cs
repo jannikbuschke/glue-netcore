@@ -1,4 +1,4 @@
-﻿namespace JannikB.Glue.AspNetCore.Tests
+namespace Glow.Users
 {
     public interface IUser
     {

@@ -7,12 +7,10 @@ using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Glow.Configurations;
 using Glow.Core.FakeData;
+using Glow.Files;
 using Glow.TypeScript;
-using Glue.Files;
-using JannikB.AspNetCore.Utils.Module;
-using JannikB.Glue;
+using Glow.Validation;
 using MediatR;
-using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -209,13 +207,13 @@ namespace Glow.Sample.Files
 
     public class Foo { }
 
-    [ODataRoutePrefix("Portfolios")]
-    public class PortfoliosOdataController : BaseOdataController<Portfolio, Guid>
-    {
-        public PortfoliosOdataController(DataContext ctx)
-            : base(ctx.Portfolios, key => ctx.Portfolios.Where(v => v.Id == key))
-        {
+    //[ODataRoutePrefix("Portfolios")]
+    //public class PortfoliosOdataController : BaseOdataController<Portfolio, Guid>
+    //{
+    //    public PortfoliosOdataController(DataContext ctx)
+    //        : base(ctx.Portfolios, key => ctx.Portfolios.Where(v => v.Id == key))
+    //    {
 
-        }
-    }
+    //    }
+    //}
 }

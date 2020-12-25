@@ -1,6 +1,6 @@
 using System;
 
-namespace JannikB.Glue.AspNetCore
+namespace Glow.Glue.AspNetCore
 {
     public class BadRequestException : Exception
     {

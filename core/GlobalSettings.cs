@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace JannikB.Glue.AspNetCore
+namespace Glow.Glue.AspNetCore
 {
     public class GlobalSettings : Dictionary<string, string>
     {

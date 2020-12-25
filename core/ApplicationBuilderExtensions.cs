@@ -4,7 +4,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using Glow.Authentication.Aad;
-using JannikB.Glue.AspNetCore;
+using Glow.Glue.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;

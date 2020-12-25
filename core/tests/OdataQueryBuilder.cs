@@ -1,9 +1,10 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Glow.Users;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace JannikB.Glue.AspNetCore.Tests
+namespace Glow.Glue.AspNetCore.Tests
 {
     public abstract class BaseRequestBuilder<T> where T : class
     {

@@ -1,25 +1,32 @@
 import * as React from "react"
-import { Route, useNavigate, Routes } from "react-router-dom"
 import { useParams } from "react-router"
-import { PageHeader } from "antd"
-import { useTranslation } from "react-i18next"
 import {} from "@ant-design/icons"
-import styled from "styled-components"
 import { Formik } from "formik"
-import { Form } from "formik-antd"
+import { Form, Input, SubmitButton } from "formik-antd"
 import { useSubmit } from "glow-react/es/Forms/use-submit"
 import { useData } from "glow-react/es/query/use-data"
-
-interface $1Dto {}
+import { Container, Header } from "../layout"
+import { $1, default$1, Update$1 } from "../ts-models"
 
 export function $1DetailView() {
   const { id } = useParams()
-  const { data, status, error } = useData<$1Dto>(`/api/$1/${id}`, {})
-  // const [update, validate] = useSubmit(\"/api/$1/update")
-  const navigate = useNavigate()
-  return <Container>{/* ... */}</Container>
+  const { data } = useData<$1>(`/api/$1/${id}`, default$1)
+  const [update, validate] = useSubmit("/api/$1/update")
+  return (
+    <Container>
+      <Header title={data.displayName} />
+      <Formik<Update$1>
+        initialValues={data}
+        validate={validate}
+        onSubmit={async (values) => {}}
+      >
+        <Form>
+          <Form.Item name="displayName">
+            <Input name="displayName" placeholder="Displayname" />
+          </Form.Item>
+          <SubmitButton>Save</SubmitButton>
+        </Form>
+      </Formik>
+    </Container>
+  )
 }
-
-const Header = styled(PageHeader)``
-
-const Container = styled.div``

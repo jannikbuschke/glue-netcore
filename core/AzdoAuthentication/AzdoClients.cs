@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 
-namespace Glue.AzdoAuthentication
+namespace Glow.AzdoAuthentication
 {
     public class AzdoClients
     {

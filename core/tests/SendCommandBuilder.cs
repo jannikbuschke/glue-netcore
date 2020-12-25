@@ -1,9 +1,10 @@
 using System.Net.Http;
 using System.Threading.Tasks;
+using Glow.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace JannikB.Glue.AspNetCore.Tests
+namespace Glow.Tests
 {
     public static class HttpContentExtension
     {

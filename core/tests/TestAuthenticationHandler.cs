@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace JannikB.Glue.AspNetCore.Tests
+namespace Glow.Tests
 {
     public class AdditionalClaims
     {

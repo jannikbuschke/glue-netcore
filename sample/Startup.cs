@@ -10,7 +10,7 @@ using Glow.Core.Typescript;
 using Glow.Sample.Configurations;
 using Glow.Sample.Users;
 using Glow.TypeScript;
-using JannikB.Glue.AspNetCore.Tests;
+using Glow.Glue.AspNetCore.Tests;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +23,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Glow.Tests;
+using Glow.Users;
 
 namespace Glow.Sample
 {
