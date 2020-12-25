@@ -288,7 +288,6 @@ namespace Glow.Core.Typescript
 
         private static string RenderEnumValues(Type t)
         {
-            Array values = Enum.GetValues(t);
             var r = new List<string>();
             foreach (var val in GetEnumValues(t))
             {

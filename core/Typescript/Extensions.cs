@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Glow.Core.Typescript;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Glow.TypeScript
@@ -48,9 +49,14 @@ namespace Glow.TypeScript
             configureOptions?.Invoke(options);
             services.AddSingleton(options);
 
-            services.AddSingleton(new AssembliesToScan() { Value = assembliesToScan });
+            //services.AddSingleton(new AssembliesToScan() { Value = assembliesToScan });
             //services.AddHostedService<GenerateApiClientsAtStartup>();
-            services.AddHostedService<GenerateTsModelsAtStartupV2>();
+            //services.AddHostedService<GenerateTsModelsAtStartupV2>();
+            services.AddHostedService(provider => new GenerateTsModelsAtStartupV2(
+                provider.GetService<IWebHostEnvironment>(),
+                assembliesToScan,
+                options
+            ));
         }
     }
 }

@@ -23,7 +23,20 @@ namespace Glow.Sample
 
             try
             {
-                Log.Information($"Build host {name}");
+                Log.Information("Build host " + typeof(Program).Namespace);
+
+                Log.Information("Reconfiguring logger");
+                Log.Logger = GetEnvironmentName == "Production"
+                    ? new LoggerConfiguration()
+                        .ReadFrom.Configuration(Configuration)
+                        //.WriteTo.ApplicationInsights(TelemetryConfiguration.Active, TelemetryConverter.Traces)
+                        .CreateLogger()
+                    : new LoggerConfiguration()
+                        .ReadFrom.Configuration(Configuration)
+                        .CreateLogger();
+
+                Log.Information("Reconfigured logger");
+
                 IWebHost host = CreateWebHostBuilder(args).Build();
 
                 host.MigrateDatabase<DataContext>();
@@ -71,7 +84,7 @@ namespace Glow.Sample
                 });
         }
 
-        private static string EnvironmentName
+        private static string GetEnvironmentName
         {
             get
             {
@@ -79,11 +92,21 @@ namespace Glow.Sample
             }
         }
 
+        private static IConfiguration Configuration { get; } = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{GetEnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
         private static Logger GetPreStartLogger()
         {
-            return EnvironmentName == "Production"
+            return GetEnvironmentName == "Production"
                 ? new LoggerConfiguration()
-                    .WriteTo.RollingFile("log/log-{Date}.txt")
+                    .WriteTo.File("logs/prestart-log-.txt", rollingInterval: RollingInterval.Day)
+                    .WriteTo.Console()
+                    //.WriteTo.ApplicationInsights(TelemetryConfiguration.Active, TelemetryConverter.Traces)
+                    .Enrich.FromLogContext()
                     .CreateLogger()
                 : new LoggerConfiguration()
                     .WriteTo.Console()

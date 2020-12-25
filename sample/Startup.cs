@@ -1,4 +1,5 @@
 using System.Net;
+using System.Reflection;
 using System.Security.Claims;
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
@@ -20,6 +21,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualStudio.Services.Common;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Glow.Sample
 {
@@ -39,6 +42,14 @@ namespace Glow.Sample
             services.AddMvc(options =>
             {
                 options.EnableEndpointRouting = false;
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+            .AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.Formatting = Formatting.Indented;
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
             });
             UserDto testUser = TestUsers.TestUser();
 
@@ -93,12 +104,14 @@ namespace Glow.Sample
 
             services.AddOptions();
 
-            // Reinforced typings:
-            //services.AddTransient<IStartupFilter, CreateTypescriptDefinitions>();
-            services.AddTypescriptGeneration(new[] { GetType().Assembly }, options=>
+            //services.AddTypescriptGeneration(new[] { GetType().Assembly }, options =>
+            //{
+            //    //options.Path =
+            //});
+
+            services.AddTypescriptGeneration(new[] { Assembly.GetAssembly(typeof(GlowCoreModule)) }, options =>
             {
-                options.GenerateApi = false;
-                //options.Path =
+                options.Path = "../core/web/src/";
             });
         }
 
