@@ -6,7 +6,7 @@
     <PackageId>Glow.Core</PackageId>
     <AssemblyName>Glow.Core</AssemblyName>
     <RootNamespace>Glow.Core</RootNamespace>
-    <Version>0.11.0</Version>
+    <Version>0.12.0</Version>
     <Authors>Jannik Buschke</Authors>
     <SpaRoot>web\</SpaRoot>
     <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
