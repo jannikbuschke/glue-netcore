@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Glow.Authentication.Aad
 {
     [Route("[controller]/[action]")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
 
         [HttpGet]
@@ -26,7 +26,7 @@ namespace Glow.Authentication.Aad
         }
 
         [HttpGet]
-        public IActionResult SignOut()
+        public new IActionResult SignOut()
         {
             if (User.Identity.IsAuthenticated)
             {

@@ -8,6 +8,7 @@ using Glow.Glue.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
@@ -17,9 +18,55 @@ using Serilog;
 
 namespace Glow.Core
 {
+    public class ApplicationBuilderOptions
+    {
+        public string SpaDevServerUri { get; set; } = "http://localhost:3000";
+    }
 
     public static class ApplicationBuilderExtensions
     {
+        public static void UseGlow(
+            this IApplicationBuilder app,
+            IWebHostEnvironment env,
+            IConfiguration configuration,
+            Action<ApplicationBuilderOptions> configureOptions = null
+        )
+        {
+            var options = new ApplicationBuilderOptions();
+            if (options != null) { configureOptions(options); }
+
+            app.AddGlowErrorHandler(env, configuration);
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(routes =>
+            {
+                routes.MapControllers();
+            });
+
+            app.Map("/api", app =>
+            {
+                app.Run(async ctx =>
+                {
+                    ctx.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                    await ctx.Response.WriteAsync("Not found");
+                });
+            });
+
+            app.UseSpa(spa =>
+            {
+                spa.Options.SourcePath = "web";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseProxyToSpaDevelopmentServer(options.SpaDevServerUri);
+                }
+            });
+        }
+
         public static void AddGlowErrorHandler(this IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
         {
             app.UseExceptionHandler(CreateErrorHandler(env, configuration));
@@ -40,14 +87,14 @@ namespace Glow.Core
 
                     ProblemDetails toProblemDetails(Exception ex)
                     {
-                        var instance = $"urn:gertrud:error:{Guid.NewGuid()}";
+                        var instance = $"urn:glow:error:{Guid.NewGuid()}";
 
-                        if (ex is BadHttpRequestException badHttpRequestException)
+                        if (ex is Microsoft.AspNetCore.Http.BadHttpRequestException badHttpRequestException)
                         {
                             return new ProblemDetails
                             {
                                 Title = "Invalid request",
-                                Status = (int) typeof(BadHttpRequestException).GetProperty("StatusCode",
+                                Status = (int) typeof(Microsoft.AspNetCore.Http.BadHttpRequestException).GetProperty("StatusCode",
                                 BindingFlags.NonPublic | BindingFlags.Instance).GetValue(badHttpRequestException),
                                 Detail = badHttpRequestException.Message,
                                 Type = "kestrel_bad_request"

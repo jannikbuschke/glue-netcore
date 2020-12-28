@@ -43,7 +43,7 @@ namespace Glow.Sample
         {
             services.AddMvc(options =>
             {
-                options.EnableEndpointRouting = false;
+                options.EnableEndpointRouting = true;
             })
             .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
             .AddNewtonsoftJson(options =>
@@ -122,45 +122,10 @@ namespace Glow.Sample
             IWebHostEnvironment env
         )
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseMvc();
-
-            app.Map("/hello", app =>
-            {
-                app.Run(async (context) =>
-                {
-                    await context.Response.WriteAsync("hello world");
-                });
-            });
-
-            new string[] { "/api" }.ForEach(v =>
-            {
-                app.Map(v, app =>
-                {
-                    app.Run(async ctx =>
-                    {
-                        ctx.Response.StatusCode = (int) HttpStatusCode.NotFound;
-                        await ctx.Response.WriteAsync("Not found");
-                    });
-                });
-            });
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "web";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:3001");
-                }
-            });
+            app.UseGlow(env, configuration, options =>
+             {
+                 options.SpaDevServerUri = "http://localhost:3001";
+             });
         }
     }
 }
