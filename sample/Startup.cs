@@ -1,30 +1,23 @@
-using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using AutoMapper;
 using AutoMapper.EquivalencyExpression;
 using Glow.Configurations;
 using Glow.Core;
-using Glow.Core.Actions;
-using Glow.Core.Typescript;
 using Glow.Sample.Configurations;
 using Glow.Sample.Users;
+using Glow.Tests;
 using Glow.TypeScript;
-using Glow.Glue.AspNetCore.Tests;
+using Glow.Users;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using Glow.Tests;
-using Glow.Users;
 
 namespace Glow.Sample
 {

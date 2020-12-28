@@ -2,10 +2,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Glow.TypeScript;
-using Glow.Glue;
+using Glow.Validation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Glow.Validation;
 
 namespace Glow.Sample.Forms
 {

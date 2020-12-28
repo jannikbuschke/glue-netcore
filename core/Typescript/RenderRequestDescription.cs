@@ -19,7 +19,7 @@ namespace Glow.Core.Typescript
 
         public string Render()
         {
-            var a = requestDescription;
+            RequestDescription a = requestDescription;
             var builder = new StringBuilder();
             try
             {

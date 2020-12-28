@@ -1,7 +1,7 @@
 using Glow.Validation;
 
 namespace Glow.Users
-{ 
+{
     public class UserDto : IUser
     {
         [RequiredIfNullOrEmpty("DisplayName", "Email")]

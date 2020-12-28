@@ -5,9 +5,8 @@ using Glow.Core.Tests;
 using Glow.Sample;
 using Glow.Sample.Actions;
 using Glow.Sample.Users;
-using Glow.Glue.AspNetCore.Tests;
-using Xunit;
 using Glow.Users;
+using Xunit;
 
 namespace Glow.Test
 {
@@ -26,7 +25,7 @@ namespace Glow.Test
                 .ExecuteAndRead();
 
             UserDto user2 = TestUsers.NonPrivilegedUser();
-            var response2 = await Send(new SampleAction { Foo = "foo" })
+            System.Net.Http.HttpResponseMessage response2 = await Send(new SampleAction { Foo = "foo" })
                 .To("/api/actions/sample")
                 .As(user2)
                 .Execute();
@@ -38,7 +37,7 @@ namespace Glow.Test
         public async Task NotThrow2()
         {
             UserDto user = TestUsers.TestUser();
-            var response = await Send(new SampleAction2 { Message = "foo" })
+            Response response = await Send(new SampleAction2 { Message = "foo" })
                 .To("/api/actions/sample-2")
                 .As(user)
                 .ExecuteAndRead();

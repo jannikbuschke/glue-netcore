@@ -75,7 +75,7 @@ namespace Glow.Core.Typescript
 
             Extensions2.AddAllTypes(additionalTypes);
 
-            foreach (var type in Extensions2.AllTypes())
+            foreach (Type type in Extensions2.AllTypes())
             {
                 Render(type, builder, entities, allEntityNames);
             }
