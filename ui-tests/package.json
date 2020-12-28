@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "test:all": "testcafe chrome:headless tests/**/* -s takeOnFails=true,pathPattern=${TEST}/${FILE_INDEX}.png --skip-js-errors --skip-uncaught-errors",
+    "test:all:chrome": "testcafe chrome tests/**/* -s takeOnFails=true,pathPattern=${TEST}/${FILE_INDEX}.png --skip-js-errors --skip-uncaught-errors",
+    "test:all:chrome:video": "testcafe chrome tests/**/* --video artifacts/videos --video-encoding-options r=60",
+    "test": "npm run test:all:chrome",
+    "format": "prettier --write tests/** package.json config.js"
+  },
+  "devDependencies": {
+    "@ffmpeg-installer/ffmpeg": "1.0.20",
+    "dotenv": "8.2.0",
+    "testcafe": "1.8.7",
+    "prettier": "2.0.5"
+  }
+}
