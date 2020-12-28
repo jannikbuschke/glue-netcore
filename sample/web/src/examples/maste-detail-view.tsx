@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate, useParams, useLocation } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { PageHeader } from "antd"
 import {} from "@ant-design/icons"
 import { MasterDetailView } from "glow-react/es/layouts/master-detail-view"

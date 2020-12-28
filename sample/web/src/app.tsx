@@ -15,8 +15,8 @@ import {
   UnorderedListOutlined,
   EditOutlined,
 } from "@ant-design/icons"
-import { MasterDetailViewExample } from "./examples/master-detail-view-example"
-import { SelectAsyncExample } from "./examples/select-async-example"
+import { MasterDetailViewExample } from "./examples/maste-detail-view"
+import { SelectAsyncExample } from "./examples/select-async"
 import { DetailviewExample } from "./examples/detail-view"
 import { ListViewExample } from "./examples/list-view"
 import { FormExample } from "./examples/form"
