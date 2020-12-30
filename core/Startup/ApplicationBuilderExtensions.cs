@@ -32,7 +32,7 @@ namespace Glow.Core
         )
         {
             var options = new ApplicationBuilderOptions();
-            if (options != null) { configureOptions(options); }
+            if (configureOptions != null) { configureOptions(options); }
 
             app.AddGlowErrorHandler(env, configuration);
 

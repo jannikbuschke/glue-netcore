@@ -1,6 +1,6 @@
 import { Input, Table } from "antd"
 import { InputProps } from "antd/lib/input"
-import { TableProps } from "antd/lib/table"
+import { ColumnsType, ColumnType, TableProps } from "antd/lib/table"
 import * as React from "react"
 import { useNavigate } from "react-router"
 import { HighlightableRow } from "../antd/highlightable-row"
@@ -9,12 +9,12 @@ import { useListContext } from "./list-context"
 
 interface ListProps<T> {
   path: string
-  columns: {
+  columns: (Omit<ColumnType<T>, "render"> & {
     title: string
     key: string
     render: (item: T) => React.ReactNode
     sortable?: boolean
-  }[]
+  })[]
 }
 
 export function ListSearch(props: Omit<InputProps, "value" | "onChange">) {
@@ -40,18 +40,18 @@ export function List<RecordType extends { id: string } = any>({
   path,
   columns,
   ...props
-}: ListProps<RecordType> &
-  Omit<
-    TableProps<RecordType>,
-    | "columns"
-    | "loading"
-    | "rowKey"
-    | "components"
-    | "onRow"
-    | "dataSource"
-    | "onChange"
-    | "pagination"
-  >) {
+}: Omit<
+  TableProps<RecordType>,
+  | "columns"
+  | "loading"
+  | "rowKey"
+  | "components"
+  | "onRow"
+  | "dataSource"
+  | "onChange"
+  | "pagination"
+> &
+  ListProps<RecordType>) {
   const navigate = useNavigate()
 
   const ctx = useListContext()
@@ -117,11 +117,12 @@ export function List<RecordType extends { id: string } = any>({
         },
         total: data.count || 10,
       }}
-      columns={columns?.map((v) => ({
-        title: v.title,
-        key: v.key,
-        sorter: v.sortable,
-        render: (item, record) => v.render(record),
+      columns={columns?.map(({ title, key, sortable, render, ...rest }) => ({
+        ...rest,
+        title,
+        key,
+        sorter: sortable,
+        render: (item, record) => render(record),
         // ...v,
         // filterDropdown: true,
         // filters: [
@@ -143,3 +144,5 @@ export function List<RecordType extends { id: string } = any>({
 List.Error = ListError
 
 List.Search = ListSearch
+
+export * from "./list-context"

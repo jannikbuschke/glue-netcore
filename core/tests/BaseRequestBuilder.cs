@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Glow.Users;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Glow.Glue.AspNetCore.Tests
@@ -16,6 +15,7 @@ namespace Glow.Glue.AspNetCore.Tests
         {
             this.factory = factory;
         }
+
         protected async Task<R> Read<R>()
         {
             HttpResponseMessage response = await ExecuteRaw();
@@ -48,73 +48,6 @@ namespace Glow.Glue.AspNetCore.Tests
 
             HttpResponseMessage response = await client.GetAsync(Url);
             return response;
-        }
-    }
-
-    public class GetBuilder<T> : BaseRequestBuilder<T> where T : class
-    {
-        public GetBuilder(WebApplicationFactory<T> factory) : base(factory)
-        {
-
-        }
-
-        public GetBuilder<T> From(string url)
-        {
-            Url = url;
-            return this;
-        }
-
-        public GetBuilder<T> As(string userId)
-        {
-            UserId = userId;
-            return this;
-        }
-
-        public GetBuilder<T> As(UserDto user)
-        {
-            UserId = user.Id;
-            return this;
-        }
-
-        public new Task<R> Read<R>()
-        {
-            return base.Read<R>();
-        }
-
-        public new Task<HttpResponseMessage> ExecuteRaw()
-        {
-            return base.ExecuteRaw();
-        }
-    }
-
-    public class OdataQueryBuilder<T> : BaseRequestBuilder<T> where T : class
-    {
-
-        public OdataQueryBuilder(WebApplicationFactory<T> factory, string url) : base(factory)
-        {
-            Url = url;
-        }
-
-        public OdataQueryBuilder<T> As(string userId)
-        {
-            UserId = userId;
-            return this;
-        }
-
-        public OdataQueryBuilder<T> As(UserDto user)
-        {
-            UserId = user.Id;
-            return this;
-        }
-
-        public new Task<R> Read<R>()
-        {
-            return base.Read<R>();
-        }
-
-        public new Task<HttpResponseMessage> ExecuteRaw()
-        {
-            return base.ExecuteRaw();
         }
     }
 

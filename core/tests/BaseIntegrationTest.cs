@@ -63,9 +63,9 @@ namespace Glow.Core.Tests
             return new SendCommandBuilderV2<TResponse, Startup>(Factory, request);
         }
 
-        protected OdataQueryBuilder<Startup> Query(string url)
+        protected QueryBuilder<Startup> Query(string url)
         {
-            return new OdataQueryBuilder<Startup>(Factory, url);
+            return new QueryBuilder<Startup>(Factory, url);
         }
 
         protected GetBuilder<Startup> Get()

@@ -23,8 +23,8 @@ export function useData<T>(
 }
 
 export type UseGlowQueryResult<T> = [
-  queryResult: UseGlowQuery<T>,
-  useQueryResult: UseQueryResult<QueryResult<T>, any>,
+  UseGlowQuery<T>,
+  UseQueryResult<QueryResult<T>, any>,
 ]
 
 export interface UseGlowQuery<T> {

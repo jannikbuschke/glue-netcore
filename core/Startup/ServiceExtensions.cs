@@ -1,4 +1,6 @@
+using System.Reflection;
 using Glow.Clocks;
+using Glow.Core.Authentication;
 using Glow.Files;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,11 +12,15 @@ namespace Glow.Core
     public static class ServiceExtensions
     {
         /// <summary>
-        /// Adds Mvc (with Netwonsoft), 
+        /// Adds Mvc (with Netwonsoft), FileService, Clock, MockExternalSystems, SpaStaticFiles,
+        /// SignalR, HttpClient, HttpContextAccessor,
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddGlowApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddGlowApplicationServices(
+            this IServiceCollection services,
+            params Assembly[] assembliesToScan
+        )
         {
             services.AddMvc(options =>
             {
@@ -30,6 +36,24 @@ namespace Glow.Core
             });
 
             services.AddGlow();
+
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "web/build";
+            });
+
+            services.AddSignalR();
+            services.AddHttpClient();
+            services.AddHttpContextAccessor();
+
+            return services;
+        }
+
+        public static IServiceCollection AddGlowAadIntegration(
+            this IServiceCollection services
+        )
+        {
+            services.AddScoped<IGraphTokenService, GraphTokenService>();
 
             return services;
         }
