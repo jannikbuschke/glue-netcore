@@ -1,42 +1,50 @@
 import * as React from "react"
 import { Select } from "antd"
-import { schema, normalize } from "normalizr"
 import { useField } from "formik"
 import debounce from "lodash.debounce"
-import { SelectProps, SelectValue } from "antd/lib/select"
+import { SelectProps } from "antd/lib/select"
 import { LabeledValue } from "antd/lib/tree-select"
+import { useGlowQuery } from "../query/use-data"
 
-export type SelectAsyncProps<T> = {
+type SelectEntityProps<T> = {
+  url: string
   name: string
-  fetcher: (search: string) => Promise<LabeledValue[]>
-} & SelectProps<T>
+  map: (v: T) => LabeledValue
+} & Omit<SelectProps<LabeledValue>, "fetcher">
 
-export function SelectAsync<T extends SelectValue>({
-  disabled,
+export function SelectEntity<T>({
+  url,
   name,
-  fetcher,
+  map,
   ...restProps
-}: SelectAsyncProps<T>) {
-  const [options, setOptions] = React.useState<LabeledValue[]>([])
+}: SelectEntityProps<T>) {
+  const [{ result, setSearch }, {}] = useGlowQuery<T>(url, {
+    count: 0,
+    value: [],
+  })
+
+  const options = result.value.map(map)
+
   const debouncedSearch = React.useCallback(
     debounce((v: any) => {
       ;(async () => {
-        const data = await fetcher(v)
-        setOptions(data)
+        setSearch(v)
       })()
     }, 150),
     [],
   )
+
   React.useEffect(() => {
     debouncedSearch("")
     // TODO
     // on firstRender without full value
     // get single element
+    // where is endpoint of single element?
   }, [])
-  const [field, _, form] = useField<any>(name)
+  const [field, , form] = useField<any>(name)
   const value = field.value
   return (
-    <Select<T>
+    <Select<LabeledValue>
       dropdownMatchSelectWidth={false}
       value={field.value}
       onChange={(value) => {
@@ -69,8 +77,9 @@ export function SelectAsync<T extends SelectValue>({
       }}
       filterOption={false}
       {...restProps}
+      id={name}
     >
-      {options.map((v, i) => (
+      {options.map((v) => (
         <Select.Option key={v.key || v.value} value={v.value}>
           {v.label}
         </Select.Option>
@@ -78,11 +87,3 @@ export function SelectAsync<T extends SelectValue>({
     </Select>
   )
 }
-
-const entitySchema = new schema.Entity<LabeledValue>(
-  "values",
-  {},
-  {
-    idAttribute: "value",
-  },
-)
