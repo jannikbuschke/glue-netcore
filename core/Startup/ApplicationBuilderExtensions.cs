@@ -55,6 +55,15 @@ namespace Glow.Core
                 });
             });
 
+            app.Map("/odata", app =>
+            {
+                app.Run(async ctx =>
+                {
+                    ctx.Response.StatusCode = (int) HttpStatusCode.NotFound;
+                    await ctx.Response.WriteAsync("Not found");
+                });
+            });
+
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "web";
@@ -141,6 +150,16 @@ namespace Glow.Core
                                 Type = "db_conflict"
                             };
                             return problemDetails;
+                        }
+                        else if (ex is NotFoundException nf)
+                        {
+                            return new ProblemDetails
+                            {
+                                Title = "Not Found",
+                                Status = (int) HttpStatusCode.NotFound,
+                                Detail = "Datensatz wurde nicht gefunden. Evtl wurde er gelöscht oder verschoben.",
+                                Type = "not_found"
+                            };
                         }
                         else
                         {

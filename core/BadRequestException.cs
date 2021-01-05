@@ -15,8 +15,15 @@ namespace Glow.Glue.AspNetCore
     public class MissingConsentException : Exception
     {
         public MissingConsentException(string msg, string scope) : base(msg)
-        { Scope = scope; }
+        {
+            Scope = scope;
+        }
 
         public string Scope { get; }
+    }
+
+    public class NotFoundException : Exception
+    {
+        public NotFoundException(string msg) : base(msg) { }
     }
 }
