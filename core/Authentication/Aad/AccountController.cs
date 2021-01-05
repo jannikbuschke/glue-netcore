@@ -36,7 +36,7 @@ namespace Glow.Authentication.Aad
                     OpenIdConnectDefaults.AuthenticationScheme);
             }
 
-            return RedirectToAction("/");
+            return RedirectToRoute("/");
         }
     }
 }
