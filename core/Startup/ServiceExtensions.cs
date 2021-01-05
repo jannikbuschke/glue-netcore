@@ -1,9 +1,17 @@
 using System.Reflection;
+using Glow.Authentication.Aad;
 using Glow.Clocks;
 using Glow.Core.Authentication;
+using Glow.Core.EfMsalTokenStore;
+using Glow.Core.EfTicketStore;
 using Glow.Files;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -50,10 +58,33 @@ namespace Glow.Core
         }
 
         public static IServiceCollection AddGlowAadIntegration(
-            this IServiceCollection services
+            this IServiceCollection services,
+            IWebHostEnvironment env,
+            IConfiguration configuration
         )
         {
             services.AddScoped<IGraphTokenService, GraphTokenService>();
+
+            services.AddSingleton<TokenService>();
+            if (env.IsDevelopment())
+            {
+                var connectionString = configuration.ConnectionString();
+                services.AddEfMsalTokenCache(options =>
+                {
+                    options.UseSqlServer(connectionString);
+                });
+
+                services.AddEfTicketStore(options =>
+                {
+                    options.UseSqlServer(connectionString);
+                });
+            }
+            else
+            {
+                services.AddSingleton<ITokenCacheProvider, TokenCacheProvider>();
+                services.AddSingleton<ITicketStore, InmemoryTicketStore>();
+            }
+            services.AddMemoryCache();
 
             return services;
         }
