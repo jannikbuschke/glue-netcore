@@ -8,16 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Glow.TypeScript
 {
-    public class AssembliesToScan
-    {
-        public Assembly[] Value { get; set; }
-    }
-
-    public class Options
+    public class TsGenerationOptions
     {
         public string Path { get; set; }
         public bool GenerateApi { get; set; }
-
+        public Assembly[] Assemblies { get; set; }
         public string GetPath()
         {
             return Path ?? "web/src/";
@@ -41,20 +36,11 @@ namespace Glow.TypeScript
 
         public static void AddTypescriptGeneration(
             this IServiceCollection services,
-            Assembly[] assembliesToScan,
-            Action<Options> configureOptions = null
+            params TsGenerationOptions[] options
         )
         {
-            var options = new Options();
-            configureOptions?.Invoke(options);
-            services.AddSingleton(options);
-
-            //services.AddSingleton(new AssembliesToScan() { Value = assembliesToScan });
-            //services.AddHostedService<GenerateApiClientsAtStartup>();
-            //services.AddHostedService<GenerateTsModelsAtStartupV2>();
             services.AddHostedService(provider => new GenerateTsModelsAtStartupV2(
                 provider.GetService<IWebHostEnvironment>(),
-                assembliesToScan,
                 options
             ));
         }

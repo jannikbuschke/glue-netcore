@@ -16,6 +16,11 @@ namespace Glow.Core.Typescript
         private readonly Dictionary<string, TsType> tsTypes = new Dictionary<string, TsType>();
         private readonly Dictionary<string, TsEnum> tsEnums = new Dictionary<string, TsEnum>();
 
+        public int Count
+        {
+            get { return types.Count; }
+        }
+
         public void Add<T>()
         {
             types.Add(typeof(T));
@@ -82,6 +87,10 @@ namespace Glow.Core.Typescript
                 {
                     TsType tsType = Create(type, skipDependencies);
                     tsType.Id = id;
+                    if (type.IsGenericParameter)
+                    {
+                        return tsType;
+                    }
                     tsTypes.Add(id, tsType);
                     PopuplateProperties(tsType);
                 }
@@ -99,13 +108,13 @@ namespace Glow.Core.Typescript
                 DefaultValue = "[]",
                 Properties = new List<Property>()
             };
- 
+
         }
 
         private Tuple<string, string> AsDictionary(Type type)
         {
             TsType keyTsType = GetPrimitive(type.GenericTypeArguments[0]);
-            
+
             return new Tuple<string, string>
             (
                 $"{{ [key: {keyTsType.Name}]: {CreateOrGet(type).AsT0.Name} }}",
@@ -202,7 +211,7 @@ namespace Glow.Core.Typescript
 
         private void PopuplateProperties(TsType type)
         {
-            type.Properties = type.PropertyInfos
+            type.Properties = type.PropertyInfos?
                 .Select(v =>
                 {
                     // problem, current type does not yet exist on dependency
@@ -213,7 +222,7 @@ namespace Glow.Core.Typescript
                     {
                         PropertyName = v.Name.CamelCase(),
                         DefaultValue = defaultValue,
-                        TsType = tsType.IsT0 ? tsType.AsT0 : null,
+                        TsType = tsType,
                         TypeName = typeName,
                     };
                 }).ToList();
@@ -221,25 +230,17 @@ namespace Glow.Core.Typescript
 
         private TsType Create(Type type, bool skipDependencies = false)
         {
-            if (type.Name.StartsWith("QueryResu"))
-            {
-                Type[] params1 = type.GetGenericArguments();
-                Type[] args = type.GenericTypeArguments;
-                var hasParams = type.ContainsGenericParameters;
-            }
-
-            //type.GenericTypeParameters
-
             if (type.IsGenericParameter)
             {
                 return new TsType
                 {
-                    FullName = type.FullName??type.Name?? "T",
+                    FullName = type.FullName ?? type.Name ?? "T",
                     DefaultValue = "{}",
                     IsPrimitive = false,
-                    Name = type.Name?? "T",
+                    Name = type.Name ?? "T",
                     Type = type,
-                    Properties = new List<Property>()
+                    Properties = new List<Property>(),
+                    PropertyInfos = Array.Empty<PropertyInfo>()
                 };
             }
             Type[] genericTypeArguments = type.GenericTypeArguments;
@@ -263,19 +264,6 @@ namespace Glow.Core.Typescript
                 PropertyInfos = props,
             };
             return value;
-
-            //type.GetProperties(BindingFlags.Public | BindingFlags.Instance).ForEach(v =>
-            //{
-            //    builder.AppendLine($"  {v.Name.CamelCase()}: {v.PropertyType.ToTsType()}");
-            //});
-
-            //foreach (PropertyInfo v in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            //{
-            //    //var value = v.PropertyType.DefaultValue();// v.PropertyType.IsValueType ? Activator.CreateInstance(v.PropertyType) : "null";
-
-
-            //    //builder.AppendLine($"  {v.Name.CamelCase()}: {value ?? "null"},");
-            //}
         }
     }
 }

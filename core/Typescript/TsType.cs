@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using OneOf;
 
 namespace Glow.Core.Typescript
 {
@@ -32,6 +33,6 @@ namespace Glow.Core.Typescript
         public string PropertyName { get; set; }
         public string TypeName { get; set; }
         public string DefaultValue { get; set; }
-        public TsType TsType { get; set; }
+        public OneOf<TsType, TsEnum> TsType { get; set; }
     }
 }

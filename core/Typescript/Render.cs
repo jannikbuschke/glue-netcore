@@ -20,7 +20,9 @@ namespace Glow.Core.Typescript
                 RenderTsEnum(tsEnum, builder);
             }
 
-            IList<TsType> sorted = TopologicalSort(types.Types.Values, v => v.Properties.Select(v => v.TsType));
+            IList<TsType> sorted = TopologicalSort(
+                types.Types.Values,
+                v => v.Properties.Where(v=>v.TsType.IsT0).Select(v => v.TsType.AsT0));
 
             sorted = sorted.Where(v => types.Types.Values.Contains(v)).ToList();
 
@@ -109,6 +111,10 @@ namespace Glow.Core.Typescript
             Dictionary<T, bool> visited
         )
         {
+            if (item == null)
+            {
+
+            }
             var alreadyVisited = visited.TryGetValue(item, out var inProcess);
 
             if (alreadyVisited)
