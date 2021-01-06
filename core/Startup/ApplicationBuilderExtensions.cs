@@ -179,18 +179,18 @@ namespace Glow.Core
                         var id = user?.GetObjectId();
                         var name = user?.Name();
                         Log.Logger.Information("User is encountering an error {id} {user}", id, name);
+                        Log.Logger.Information("Problem details = {@details}", problemDetails);
                     }
 
                     context.Response.StatusCode = problemDetails.Status.Value;
 
-                    //await context.Response.Write
-                    await context.Response.WriteJson(problemDetails, "application/problem+json");
+                    context.Response.ContentType = "application/problem+json";
+
+                    await context.Response.WriteAsJsonAsync(problemDetails);
                 });
             }
 
             return errorHandler;
         }
-
-
     }
 }
