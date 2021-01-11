@@ -205,7 +205,8 @@ namespace Glow.Core.Typescript
             { typeof(Dictionary<string, string>), new Tuple<string, string>("{ [key: string]: string }", "{}") },
             { typeof(Dictionary<string, int>), new Tuple<string, string>("{ [key: string]: number }", "{}") },
             { typeof(Dictionary<string, object>), new Tuple<string, string>("{ [key: string]: any }", "{}") },
-            { typeof(object), new Tuple<string, string>("any", "null") }
+            { typeof(object), new Tuple<string, string>("any", "null") },
+            { typeof(byte[]), new Tuple<string, string>("string | null", "null") }
         };
 
         private void PopuplateProperties(TsType type)
@@ -246,16 +247,24 @@ namespace Glow.Core.Typescript
             Type[] genericArguments = type.GetGenericArguments();
 
             var name = genericTypeArguments.Length != 0
-                ? type.Name.Replace(".","").Replace("`","") + string.Join("", genericTypeArguments.Select(v => v.Name))
+                ? type.Name.StartsWith("Nullable")
+                    ? genericTypeArguments.First().Name + " | null"
+                    : type.Name.Replace(".","").Replace("`","") + string.Join("", genericTypeArguments.Select(v => v.Name))
                 : genericArguments.Length != 0
                 ? Regex.Replace(type.Name, "`.*$", "<" + string.Join(", ", genericArguments.Select(v => v.Name)) + ">")
                 : type.Name;
+
+            if (type.Name.StartsWith("Nullable"))
+            {
+
+            }
 
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
             var value = new TsType
             {
                 FullName = type.FullName,
+                IsPrimitive = type.Name.StartsWith("Nullable"),
                 Name = name,
                 Namespace = type.Namespace,
                 DefaultValue = genericArguments.Length != 0 ? null : "default" + name,

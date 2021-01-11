@@ -65,7 +65,15 @@ namespace Glow.Core.Typescript
             else
             {
                 //builder.Insert(0, "/* eslint-disable prettier/prettier */");
-                var path = $"{option.GetPath()}ts-models.ts";
+
+                var configuredPath = option.GetPath();
+                if(!configuredPath.EndsWith(".ts") && !configuredPath.EndsWith("/"))
+                {
+                    throw new Exception($"configured path '{configuredPath}' must end with / or .ts");
+                }
+                var path = configuredPath.EndsWith(".ts")
+                    ? configuredPath
+                    : $"{option.GetPath()}ts-models.ts";
                 Console.WriteLine(path);
 
                 Render.ToDisk(builder.Generate(), path);

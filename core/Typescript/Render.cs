@@ -27,7 +27,7 @@ namespace Glow.Core.Typescript
             sorted = sorted.Where(v => types.Types.Values.Contains(v)).ToList();
 
             // sort by dependency graph
-            foreach (TsType tsType in sorted)
+            foreach (TsType tsType in sorted.Where(v=>!v.IsPrimitive))
             {
                 RenderTsType(tsType, builder);
             }
