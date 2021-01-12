@@ -21,6 +21,7 @@ namespace Glow.Core.Typescript
         public string Name { get; set; }
         public string Namespace { get; set; }
         public Type Type { get; set; }
+        public bool IsCollection { get; set; }
 
         public string DefaultValue { get; set; }
 

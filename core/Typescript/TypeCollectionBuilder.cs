@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -52,6 +53,10 @@ namespace Glow.Core.Typescript
 
         private OneOf<TsType, TsEnum> CreateOrGet(Type type, bool skipDependencies = false)
         {
+            if(type.FullName.Contains("Gertrud.Meetings.Agenda.AgendaItemType"))
+            {
+
+            }
             if (type.IsEnum)
             {
                 TsEnum e = AsEnum(type);
@@ -70,24 +75,28 @@ namespace Glow.Core.Typescript
                     }
                 }
 
-                //if (IsDictionary(type))
-                //{
-                //    return AsDictionary(type);
-                //}
+                if (IsDictionary(type))
+                {
+                    return new TsType
+                    {
+                        Name = "any",
+                        DefaultValue = "{ }"
+                    };
+                }
 
                 if (IsEnumerableType(type))
                 {
                     // to early?
+                    // does not generate dependency
                     return AsEnumerable(type);
                 }
 
                 var id = type.FullName ?? (type.IsGenericParameter ? "T" : null);
                 if (!tsTypes.ContainsKey(id))
                 {
-
                     TsType tsType = IsNullable(type)
                         ? AsNullable(type)
-                        :Create(type, skipDependencies);
+                        : Create(type, skipDependencies);
 
                     tsType.Id = id;
                     if (type.IsGenericParameter)
@@ -107,12 +116,12 @@ namespace Glow.Core.Typescript
             TsType argTsType = type.IsArray? CreateOrGet(type.GetElementType()).AsT0:  CreateOrGet(args.First()).AsT0;
             return new TsType
             {
-                Name = argTsType.Name+"[]",
-                Namespace = type.Namespace,
+                Name = argTsType.Name + "[]",
+                Namespace = argTsType.Namespace,
                 DefaultValue = "[]",
-                Properties = new List<Property>()
+                Properties = new List<Property>(),
+                IsCollection = true
             };
-
         }
 
         private Tuple<string, string> AsDictionary(Type type)
@@ -144,6 +153,10 @@ namespace Glow.Core.Typescript
 
         private TsEnum AsEnum(Type t)
         {
+            if (t.FullName.Contains("AgendaItemType"))
+            {
+
+            }
             IEnumerable<string> values = GetEnumValues(t);
             return new TsEnum
             {
@@ -204,6 +217,8 @@ namespace Glow.Core.Typescript
             { typeof(decimal?), new Tuple<string, string>("number | null", "null") },
             { typeof(DateTime), new Tuple<string, string>("string", @"""1/1/0001 12:00:00 AM""") },
             { typeof(DateTime?), new Tuple<string, string>("string | null", "null") },
+            { typeof(DateTimeOffset), new Tuple<string, string>("string", @"""00:00:00""") },
+            { typeof(DateTimeOffset?), new Tuple<string, string>("string | null", "null") },
             { typeof(Guid), new Tuple<string, string>("string", @"""00000000-0000-0000-0000-000000000000""") },
             { typeof(Guid?),new Tuple<string, string>( "string | null", "null") },
             { typeof(bool),new Tuple<string, string>( "boolean", "false") },
@@ -211,8 +226,14 @@ namespace Glow.Core.Typescript
             { typeof(Dictionary<string, string>), new Tuple<string, string>("{ [key: string]: string }", "{}") },
             { typeof(Dictionary<string, int>), new Tuple<string, string>("{ [key: string]: number }", "{}") },
             { typeof(Dictionary<string, object>), new Tuple<string, string>("{ [key: string]: any }", "{}") },
+            { typeof(IDictionary<string, object>), new Tuple<string, string>("{ [key: string]: any }", "{}") },
             { typeof(object), new Tuple<string, string>("any", "null") },
-            { typeof(byte[]), new Tuple<string, string>("string | null", "null") }
+            { typeof(byte[]), new Tuple<string, string>("string | null", "null") },
+            { typeof(List<string>), new Tuple<string, string>("(string | null)[]", "[]") },
+            { typeof(IEnumerable<string>), new Tuple<string, string>("(string | null)[]", "[]") },
+            { typeof(Collection<string>), new Tuple<string, string>("(string | null)[]", "[]") },
+            { typeof(ICollection<string>), new Tuple<string, string>("(string | null)[]", "[]") },
+
         };
 
         private void PopuplateProperties(TsType type)
@@ -222,8 +243,15 @@ namespace Glow.Core.Typescript
                 {
                     // problem, current type does not yet exist on dependency
                     OneOf<TsType, TsEnum> tsType = CreateOrGet(v.PropertyType, skipDependencies: true);
-                    var defaultValue = tsType.Match(v1 => v1.DefaultValue, v2 => $@"""{v2.DefaultValue}""");
-                    var typeName = tsType.Match(v1 => v1.Name, v2 => v2.Name);
+                    var defaultValue = tsType.Match(v1 => v1.DefaultValue, v2 =>
+                    {
+                        return v2.Namespace + ".default" + v2.Name;
+                        //return $@"""{v2.DefaultValue}""";
+                    });
+                    var typeName = tsType.Match(v1 => {
+                        if (v1.Name == "any") { return "any"; }
+                        return v1.IsPrimitive ? v1.Name : v1.Namespace + "." + v1.Name;
+                    }, v2 => v2.Namespace + "." + v2.Name);
                     return new Property
                     {
                         PropertyName = v.Name.CamelCase(),
@@ -244,17 +272,26 @@ namespace Glow.Core.Typescript
             Type[] genericArguments = type.GetGenericArguments();
             Type[] genericTypeArguments = type.GenericTypeArguments;
 
-            var name = genericTypeArguments.First().Name + " | null";
-            return new TsType
+            var genericArgument = genericTypeArguments.First();
+
+            if (genericArgument.IsEnum)
+            {
+                CreateOrGet(genericArgument);
+            }
+
+            var name = genericArgument.Namespace + "." + genericArgument.Name + " | null";
+            var t = new TsType
             {
                 FullName = type.FullName,
                 IsPrimitive = type.Name.StartsWith("Nullable"),
                 Name = name,
                 Namespace = type.Namespace,
-                DefaultValue = genericArguments.Length != 0 ? null : "default" + name,
+                DefaultValue = null,
+                //DefaultValue = genericArguments.Length != 0 ? null : type.Namespace + ".default" + name,
                 Type = type,
                 PropertyInfos = null,
             };
+            return t;
         }
 
         private TsType Create(Type type, bool skipDependencies = false)
@@ -292,7 +329,7 @@ namespace Glow.Core.Typescript
                 IsPrimitive = type.Name.StartsWith("Nullable"),
                 Name = name,
                 Namespace = type.Namespace,
-                DefaultValue = genericArguments.Length != 0 ? null : "default" + name,
+                DefaultValue = genericArguments.Length != 0 ? null : type.Namespace + ".default" + name,
                 Type = type,
                 PropertyInfos = props,
             };
