@@ -84,7 +84,11 @@ namespace Glow.Core.Typescript
                 var id = type.FullName ?? (type.IsGenericParameter ? "T" : null);
                 if (!tsTypes.ContainsKey(id))
                 {
-                    TsType tsType = Create(type, skipDependencies);
+
+                    TsType tsType = IsNullable(type)
+                        ? AsNullable(type)
+                        :Create(type, skipDependencies);
+
                     tsType.Id = id;
                     if (type.IsGenericParameter)
                     {
@@ -228,6 +232,29 @@ namespace Glow.Core.Typescript
                 }).ToList();
         }
 
+        private bool IsNullable(Type type)
+        {
+            return type.Name.StartsWith("Nullable");
+        }
+
+        private TsType AsNullable(Type type)
+        {
+            Type[] genericArguments = type.GetGenericArguments();
+            Type[] genericTypeArguments = type.GenericTypeArguments;
+
+            var name = genericTypeArguments.First().Name + " | null";
+            return new TsType
+            {
+                FullName = type.FullName,
+                IsPrimitive = type.Name.StartsWith("Nullable"),
+                Name = name,
+                Namespace = type.Namespace,
+                DefaultValue = genericArguments.Length != 0 ? null : "default" + name,
+                Type = type,
+                PropertyInfos = null,
+            };
+        }
+
         private TsType Create(Type type, bool skipDependencies = false)
         {
             if (type.IsGenericParameter)
@@ -254,10 +281,6 @@ namespace Glow.Core.Typescript
                 ? Regex.Replace(type.Name, "`.*$", "<" + string.Join(", ", genericArguments.Select(v => v.Name)) + ">")
                 : type.Name;
 
-            if (type.Name.StartsWith("Nullable"))
-            {
-
-            }
 
             PropertyInfo[] props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
