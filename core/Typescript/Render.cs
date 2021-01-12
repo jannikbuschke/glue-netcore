@@ -34,15 +34,8 @@ namespace Glow.Core.Typescript
                 RenderTsType(tsType, builder);
             }
 
-            //builder.AppendLine("export declare module Entities {");
-
-            //builder.AppendLine(entities.ToString());
-
-            //builder.AppendLine($"  export type All = {string.Join(" | ", allEntityNames)}");
-            //builder.AppendLine("}");
             builder.Insert(0, "\r\n");
 
-            //builder.Insert(0, "/* eslint-disable prettier/prettier */");
             var text = builder.ToString();
             File.WriteAllText(path, text);
         }
@@ -57,16 +50,7 @@ namespace Glow.Core.Typescript
 
         private static void RenderTsType(TsType type, StringBuilder builder)
         {
-            //var name = type.GenericTypeArguments.Length == 0
-            //    ? type.Name.Replace(".", "")
-            //    : type.GenericTypeArguments.Length == 1
-            //        ? type.Name
-            //            .Replace("`1", type.GenericTypeArguments[0].FullName)
-            //            .Replace(".", "")
-            //        : type.Name
-            //            .Replace("`2", type.GenericTypeArguments[0].FullName + type.GenericTypeArguments[1].FullName)
-            //            .Replace(".", "");
-            //var fullName = type.FullName.Replace(".", "");
+
 
             var name = type.Name;
             builder.AppendLine($"export interface {name} {{");
@@ -87,6 +71,7 @@ namespace Glow.Core.Typescript
                 }
                 builder.AppendLine("}");
             }
+
             builder.AppendLine("");
         }
 
