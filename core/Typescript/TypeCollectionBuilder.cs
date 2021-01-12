@@ -108,6 +108,7 @@ namespace Glow.Core.Typescript
             return new TsType
             {
                 Name = argTsType.Name+"[]",
+                Namespace = type.Namespace,
                 DefaultValue = "[]",
                 Properties = new List<Property>()
             };
@@ -149,7 +150,8 @@ namespace Glow.Core.Typescript
                 Name = t.Name,
                 FullName = t.FullName,
                 DefaultValue = values.First(),
-                Values = values
+                Values = values,
+                Namespace = t.Namespace
             };
         }
 

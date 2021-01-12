@@ -16,5 +16,6 @@ namespace Glow.Core.Typescript
         public string Name { get; set; }
         public IEnumerable<string> Values { get; set; }
         public string DefaultValue { get; set; }
+        public string Namespace { get; set; }
     }
 }
