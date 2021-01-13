@@ -5,6 +5,7 @@ using System.Reflection;
 using Glow.Core.Typescript;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using OneOf;
 
 namespace Glow.TypeScript
 {
@@ -13,6 +14,7 @@ namespace Glow.TypeScript
         public string Path { get; set; }
         public bool GenerateApi { get; set; }
         public Assembly[] Assemblies { get; set; }
+        public Action<OneOf<TsType, TsEnum>> Update { get; set; }
         public string GetPath()
         {
             return Path ?? "web/src/";

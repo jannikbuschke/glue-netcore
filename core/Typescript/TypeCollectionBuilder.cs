@@ -39,16 +39,27 @@ namespace Glow.Core.Typescript
             }
         }
 
-        public TypeCollection Generate()
+        public TypeCollection Generate(Action<OneOf<TsType, TsEnum>> update)
         {
             foreach (Type type in types)
             {
                 OneOf<TsType, TsEnum> result = CreateOrGet(type);
             }
-            return new TypeCollection {
+            var collection =  new TypeCollection {
                 Types = tsTypes,
                 Enums = tsEnums
             };
+            if (update != null)
+            {
+                //var all = collection.All().Select(v => v.AsT0).Where(v => v != null).ToList();
+                var meeting = collection.All().Where(v =>v.IsT0&& v.AsT0?.Name?.StartsWith("Meeting")==true).ToList();
+                foreach (OneOf<TsType, TsEnum> v in collection.All())
+                {
+                    update(v);
+                }
+            }
+
+            return collection;
         }
 
         private OneOf<TsType, TsEnum> CreateOrGet(Type type, bool skipDependencies = false)
@@ -94,17 +105,34 @@ namespace Glow.Core.Typescript
                 var id = type.FullName ?? (type.IsGenericParameter ? "T" : null);
                 if (!tsTypes.ContainsKey(id))
                 {
-                    TsType tsType = IsNullable(type)
-                        ? AsNullable(type)
-                        : Create(type, skipDependencies);
-
-                    tsType.Id = id;
-                    if (type.IsGenericParameter)
+                    if (IsNullable(type))
                     {
-                        return tsType;
+                        OneOf<TsType, TsEnum> nullable = AsNullable(type);
+
+                        nullable.Switch(tsType =>
+                        {
+                            tsType.Id = id;
+                            tsTypes.Add(id, tsType);
+                            PopuplateProperties(tsType);
+
+                        }, v1=>
+                        {
+                            tsEnums.TryAdd(v1.Id, v1);
+                        });
+                        return nullable;
                     }
-                    tsTypes.Add(id, tsType);
-                    PopuplateProperties(tsType);
+                    else
+                    {
+                        TsType tsType = Create(type, skipDependencies);
+
+                        tsType.Id = id;
+                        if (type.IsGenericParameter)
+                        {
+                            return tsType;
+                        }
+                        tsTypes.Add(id, tsType);
+                        PopuplateProperties(tsType);
+                    }
                 }
                 return tsTypes[id];
             }
@@ -116,6 +144,7 @@ namespace Glow.Core.Typescript
             TsType argTsType = type.IsArray? CreateOrGet(type.GetElementType()).AsT0:  CreateOrGet(args.First()).AsT0;
             return new TsType
             {
+                Id = argTsType.Namespace + "." + argTsType.Name + "[]",
                 Name = argTsType.Name + "[]",
                 Namespace = argTsType.Namespace,
                 DefaultValue = "[]",
@@ -245,13 +274,15 @@ namespace Glow.Core.Typescript
                     OneOf<TsType, TsEnum> tsType = CreateOrGet(v.PropertyType, skipDependencies: true);
                     var defaultValue = tsType.Match(v1 => v1.DefaultValue, v2 =>
                     {
-                        return v2.Namespace + ".default" + v2.Name;
+                        return "default" + v2.Name;
+                        //return v2.Namespace + ".default" + v2.Name;
                         //return $@"""{v2.DefaultValue}""";
                     });
                     var typeName = tsType.Match(v1 => {
                         if (v1.Name == "any") { return "any"; }
-                        return v1.IsPrimitive ? v1.Name : v1.Namespace + "." + v1.Name;
-                    }, v2 => v2.Namespace + "." + v2.Name);
+                        return v1.IsPrimitive ? v1.Name : v1.Name;
+                        //return v1.IsPrimitive ? v1.Name : v1.Namespace + "." + v1.Name;
+                    }, v2 => v2.Name);
                     return new Property
                     {
                         PropertyName = v.Name.CamelCase(),
@@ -267,31 +298,36 @@ namespace Glow.Core.Typescript
             return type.Name.StartsWith("Nullable");
         }
 
-        private TsType AsNullable(Type type)
+        private OneOf<TsType, TsEnum> AsNullable(Type type)
         {
             Type[] genericArguments = type.GetGenericArguments();
             Type[] genericTypeArguments = type.GenericTypeArguments;
 
-            var genericArgument = genericTypeArguments.First();
+            Type genericArgument = genericTypeArguments.First();
 
             if (genericArgument.IsEnum)
             {
-                CreateOrGet(genericArgument);
+                TsEnum t = CreateOrGet(genericArgument).AsT1;
+              
+                return t;
             }
-
-            var name = genericArgument.Namespace + "." + genericArgument.Name + " | null";
-            var t = new TsType
+            else
             {
-                FullName = type.FullName,
-                IsPrimitive = type.Name.StartsWith("Nullable"),
-                Name = name,
-                Namespace = type.Namespace,
-                DefaultValue = null,
-                //DefaultValue = genericArguments.Length != 0 ? null : type.Namespace + ".default" + name,
-                Type = type,
-                PropertyInfos = null,
-            };
-            return t;
+                var name = genericArgument.Name + " | null";
+                //var name = genericArgument.Namespace + "." + genericArgument.Name + " | null";
+                var t = new TsType
+                {
+                    FullName = type.FullName,
+                    IsPrimitive = type.Name.StartsWith("Nullable"),
+                    Name = name,
+                    Namespace = type.Namespace,
+                    DefaultValue = null,
+                    //DefaultValue = genericArguments.Length != 0 ? null : type.Namespace + ".default" + name,
+                    Type = type,
+                    PropertyInfos = null,
+                };
+                return t;
+            }
         }
 
         private TsType Create(Type type, bool skipDependencies = false)
@@ -329,7 +365,7 @@ namespace Glow.Core.Typescript
                 IsPrimitive = type.Name.StartsWith("Nullable"),
                 Name = name,
                 Namespace = type.Namespace,
-                DefaultValue = genericArguments.Length != 0 ? null : type.Namespace + ".default" + name,
+                DefaultValue = genericArguments.Length != 0 ? null : "default" + name,
                 Type = type,
                 PropertyInfos = props,
             };

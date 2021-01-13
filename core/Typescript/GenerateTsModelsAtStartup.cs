@@ -71,12 +71,13 @@ namespace Glow.Core.Typescript
                 {
                     throw new Exception($"configured path '{configuredPath}' must end with / or .ts");
                 }
-                var path = configuredPath.EndsWith(".ts")
-                    ? configuredPath
-                    : $"{option.GetPath()}ts-models.ts";
+                var path = option.GetPath();
+                //var path = configuredPath.EndsWith(".ts")
+                //    ? configuredPath
+                //    : $"{option.GetPath()}ts-models.ts";
                 Console.WriteLine(path);
 
-                Render.ToDisk(builder.Generate(), path);
+                Render.ToDisk(builder.Generate(option.Update), path);
             }
 
             //File.WriteAllText(path, text);
