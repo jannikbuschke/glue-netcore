@@ -6,7 +6,7 @@ import { SelectProps } from "antd/lib/select"
 import { LabeledValue } from "antd/lib/tree-select"
 import { useGlowQuery } from "../query/use-data"
 
-type SelectEntityProps<T> = {
+export type SelectEntityProps<T> = {
   url: string
   name: string
   map: (v: T) => LabeledValue
