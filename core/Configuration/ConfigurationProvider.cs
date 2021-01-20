@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
@@ -24,12 +25,16 @@ namespace Glow.Configurations
             using var dbContext = new SqlServerConfigurationDataContext(builder.Options);
             dbContext.Database.Migrate();
         }
+
         public Action<DbContextOptionsBuilder> OptionsAction { get; }
+
+        private Dictionary<string, string> data = null;
 
         protected IDictionary<string, string> Data
         {
             get
             {
+                if (this.data != null) return this.data;
                 var builder = new DbContextOptionsBuilder<SqlServerConfigurationDataContext>();
 
                 OptionsAction(builder);
@@ -101,6 +106,9 @@ namespace Glow.Configurations
                         cfg[item.Key] = item.Value.ToString();
                     }
                 }
+
+                this.data = cfg;
+                return this.data;
                 return cfg;
             }
         }
