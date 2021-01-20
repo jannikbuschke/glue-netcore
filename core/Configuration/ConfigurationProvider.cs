@@ -34,7 +34,11 @@ namespace Glow.Configurations
         {
             get
             {
-                if (this.data != null) return this.data;
+                if (this.data != null && !reloadNecessary)
+                {
+                    return this.data;
+                }
+
                 var builder = new DbContextOptionsBuilder<SqlServerConfigurationDataContext>();
 
                 OptionsAction(builder);
@@ -108,6 +112,7 @@ namespace Glow.Configurations
                 }
 
                 this.data = cfg;
+                reloadNecessary = false;
                 return this.data;
                 return cfg;
             }
@@ -118,6 +123,13 @@ namespace Glow.Configurations
             return Data.TryGetValue(key, out value);
         }
 
+        private static bool reloadNecessary = true;
+
+        public static void SetReloadNecessary()
+        {
+            reloadNecessary = true;
+        }
+
         public virtual void Set(string key, string value)
         {
             //Data[key] = value;
@@ -126,6 +138,7 @@ namespace Glow.Configurations
 
         public virtual void Load()
         {
+            this.data = null;
             // no-op
         }
 
